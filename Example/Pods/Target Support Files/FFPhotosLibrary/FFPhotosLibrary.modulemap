@@ -1,0 +1,6 @@
+framework module FFPhotosLibrary {
+  umbrella header "FFPhotosLibrary-umbrella.h"
+
+  export *
+  module * { export * }
+}
