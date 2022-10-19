@@ -58,8 +58,7 @@ class FFAssetItemCell: UICollectionViewCell {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.isExclusiveTouch = true
-        self.contentView.backgroundColor = UIColor.white
+        self.contentView.backgroundColor = UIColor.white.dynamicGray6
         setupUI()
         addActions()
     }

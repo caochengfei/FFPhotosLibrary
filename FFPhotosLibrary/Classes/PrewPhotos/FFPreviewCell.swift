@@ -23,7 +23,7 @@ class FFPreviewCell: UICollectionViewCell {
     private var assetmodel:FFAssetItem?
     
     private var activeView:UIActivityIndicatorView = UIActivityIndicatorView(style: .white)
-
+    
     lazy private var preview:UIView = {
         let view = UIView()
         view.clipsToBounds = true

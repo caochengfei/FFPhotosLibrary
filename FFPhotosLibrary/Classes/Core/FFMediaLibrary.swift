@@ -682,11 +682,11 @@ extension FFMediaLibrary {
             if !success {
                 ffPrint("请打开相册权限")
             }
-            var localIdenitifer:String?
+            let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
             FFMediaLibrary.createAssets(image: image) { phAsset in
                 PHPhotoLibrary.shared().performChanges({
                     if let phAsset = phAsset?.firstObject {
-                        let request = PHAssetChangeRequest.init(for: phAsset)
+                        let _ = PHAssetChangeRequest.init(for: phAsset)
                     }
                 }, completionHandler: { (success, error) in
                     DispatchQueue.main.async {
@@ -703,7 +703,7 @@ extension FFMediaLibrary {
                 ffPrint("请打开相册权限")
             }
             let albumCollection = FFMediaLibrary.createCustomAssetCollectionIfNeeded()
-            var localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
+            let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
             FFMediaLibrary.createAssets(image: image) { phAsset in
                 if let albumCollection = albumCollection, let phAsset = phAsset {
                     PHPhotoLibrary.shared().performChanges({

@@ -92,6 +92,7 @@ open class FFPhotosViewController: UIViewController {
     
     public var customBottomView: FFPhotosCustomBottomView?
     
+    
     public var albumArray: [FFAlbumItem] {
         return viewModel.albumArray
     }
@@ -99,6 +100,8 @@ open class FFPhotosViewController: UIViewController {
     public lazy var collectionView : UICollectionView = {
         return _lazyCollectionView()
     }()
+    
+    private var startMovePoint: CGPoint?
     
     private override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
@@ -129,7 +132,7 @@ open class FFPhotosViewController: UIViewController {
     }
 
     func setupUI() {
-        view.backgroundColor = .white
+        view.backgroundColor = .white.dynamicGray6
         self.view.addSubview(collectionView)
         
         if let customBottomView = customBottomView {
@@ -278,7 +281,7 @@ extension FFPhotosViewController {
         
         let view = UICollectionView(frame: CGRect(x: 0, y: 44.px, width: self.view.height, height: self.view.height), collectionViewLayout: flowlayout)
         view.register(FFAssetItemCell.self, forCellWithReuseIdentifier: NSStringFromClass(FFAssetItemCell.self))
-        view.backgroundColor = UIColor.white
+        view.backgroundColor = UIColor.white.dynamicGray6
         view.delegate = self
         view.dataSource = self
         view.showsVerticalScrollIndicator = false
@@ -313,5 +316,20 @@ extension FFPhotosViewController {
             flowlayout.itemSize = size
             flowlayout.invalidateLayout()
         }
+    }
+}
+
+extension FFPhotosViewController {
+    
+    open override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        startMovePoint = touches.first?.location(in: self.collectionView)
+    }
+    
+    open override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+    }
+    
+    open override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
     }
 }
