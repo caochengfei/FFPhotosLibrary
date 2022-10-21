@@ -120,7 +120,7 @@ open class FFMediaLibrary: NSObject {
             let targetPath: String = "\(folderPath)/\(targetId.md5).\(origUrl.pathExtension)"
            
             if !FileManager.default.fileExists(atPath: targetPath) {
-                FFIOTool.copyItem(fromUrl: origUrl, toUrl: URL(fileURLWithPath: targetPath))
+                FFDiskTool.copyItem(fromUrl: origUrl, toUrl: URL(fileURLWithPath: targetPath))
             }
             
             DispatchQueue.main.async {
@@ -165,7 +165,7 @@ open class FFMediaLibrary: NSObject {
                     completion(nil)
                     return
                 }
-                let targetDirectory = (directoryName != nil) ? FFIOTool.createDirectory(directoryName: directoryName!).path :  NSTemporaryDirectory()
+                let targetDirectory = (directoryName != nil) ? FFDiskTool.createDirectory(directoryName: directoryName!).path :  NSTemporaryDirectory()
                 let targetPath = targetDirectory + "/\(NSUUID().uuidString.md5).png"
                 saveImage(currentImage: image, targetPath: targetPath)
                 DispatchQueue.main.async {

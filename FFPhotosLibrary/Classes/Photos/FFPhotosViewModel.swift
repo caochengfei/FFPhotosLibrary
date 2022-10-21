@@ -29,6 +29,8 @@ public class FFPhotosViewModel: NSObject {
     public var albumArray = [FFAlbumItem]()
     
     public var currentAlbum: FFAlbumItem?
+        
+    var isAdd: Bool = true
 }
 
 extension FFPhotosViewModel {
@@ -117,7 +119,7 @@ extension FFPhotosViewModel {
         refreshSelectStatus()
     }
     
-    private func containsAsset(asset:FFAssetItem) -> Bool {
+    func containsAsset(asset:FFAssetItem) -> Bool {
         for selAsset in selectedDataArray {
             if let selId = selAsset.asset?.localIdentifier,
                let curId = asset.asset?.localIdentifier,
@@ -157,9 +159,68 @@ extension FFPhotosViewModel {
    
     private func sortSelectNumber() {
         //重新排序选中的位置
+        let tempIndex = selectedDataArray.count
         for i in 0..<selectedDataArray.count {
             let model = selectedDataArray[i]
             model.selectNumber.accept(i + 1)
         }
+        
+//        for i in 0..<tempSelectedArray.count {
+//            let model = tempSelectedArray[i]
+//            model.selectNumber.accept(tempIndex + i + 1)
+//        }
+    }
+    
+    func selectedItems(fromIndex: Int, toIndex: Int) {
+        if isAdd {
+            // add
+            if fromIndex > toIndex {
+                for i in (toIndex...fromIndex).reversed() {
+                    let item = dataArray[i]
+                    item.isSelected.accept(true)
+                    if !containsAsset(asset: item) {
+                        selectedDataArray.append(item)
+                    }
+//                    tempSelectedArray.append(item)
+                }
+            } else {
+                for i in fromIndex...toIndex {
+                    let item = dataArray[i]
+                    item.isSelected.accept(true)
+                    if !containsAsset(asset: item) {
+                        selectedDataArray.append(item)
+                    }
+                }
+            }
+        } else {
+            // delete
+            // add
+            if fromIndex > toIndex {
+                for i in (toIndex...fromIndex).reversed() {
+                    let item = dataArray[i]
+                    item.isSelected.accept(false)
+                    if containsAsset(asset: item) {
+                        deleteAsset(asset: item)
+                    }
+                }
+            } else {
+                for i in fromIndex...toIndex {
+                    let item = dataArray[i]
+                    item.isSelected.accept(false)
+                    if containsAsset(asset: item) {
+                        deleteAsset(asset: item)
+                    }
+                }
+            }
+            
+        }
+        sortSelectNumber()
+        refreshSelectStatus()
+    }
+    
+    func mergeTempSelectedItems() {
+        sortSelectNumber()
+        refreshSelectStatus()
     }
 }
+

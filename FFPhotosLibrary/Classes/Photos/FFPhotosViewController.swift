@@ -90,7 +90,11 @@ open class FFPhotosViewController: UIViewController {
     
     public let viewModel = FFPhotosViewModel()
     
-    public var customBottomView: FFPhotosCustomBottomView?
+    public var customBottomView: FFPhotosCustomBottomView? {
+        didSet {
+            bottomViewChangeUpdateUI()
+        }
+    }
     
     
     public var albumArray: [FFAlbumItem] {
@@ -103,6 +107,17 @@ open class FFPhotosViewController: UIViewController {
     
     private var startMovePoint: CGPoint?
     
+    lazy var panGesture: UIPanGestureRecognizer = {
+        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(panAction(_ :)))
+        return panGesture
+    }()
+    
+    // Sliding multi-select
+    var preIndexPath: IndexPath?
+    var beginIndexPath: IndexPath?
+    var autoScrollTop: Bool = false
+    var timer: Timer?
+    
     private override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
@@ -114,6 +129,10 @@ open class FFPhotosViewController: UIViewController {
         self.viewModel.config = config
         self.mediaType = mediaType
         self.delegate = delegate
+        
+        if config.multipleSelected == true {
+            self.view.addGestureRecognizer(panGesture)
+        }
     }
     
     required public init?(coder: NSCoder) {
@@ -134,22 +153,25 @@ open class FFPhotosViewController: UIViewController {
     func setupUI() {
         view.backgroundColor = .white.dynamicGray6
         self.view.addSubview(collectionView)
-        
+        bottomViewChangeUpdateUI()
+    }
+    
+    func bottomViewChangeUpdateUI() {
         if let customBottomView = customBottomView {
             customBottomView.delegate = self
             self.view.addSubview(customBottomView)
-            collectionView.snp.makeConstraints { (make) in
+            collectionView.snp.remakeConstraints { (make) in
                 make.left.right.top.equalToSuperview()
                 make.bottom.equalTo(customBottomView.snp.top)
             }
             
-            customBottomView.snp.makeConstraints({ make in
+            customBottomView.snp.remakeConstraints({ make in
                 make.left.right.equalToSuperview()
                 make.bottom.equalToSuperview()
                 make.height.equalTo(customBottomView.height)
             })
         } else {
-            collectionView.snp.makeConstraints { (make) in
+            collectionView.snp.remakeConstraints { (make) in
                 make.left.right.top.equalToSuperview()
                 make.left.right.top.bottom.equalToSuperview()
             }
@@ -220,6 +242,10 @@ extension FFPhotosViewController : UICollectionViewDataSource,UICollectionViewDe
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
         return CGSize(width: self.view.width, height: 0)
+    }
+    
+    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        delegate?.scrollViewDidScroll(view: scrollView)
     }
 }
 
@@ -319,17 +345,90 @@ extension FFPhotosViewController {
     }
 }
 
+//MARK: -  Sliding multi-select
 extension FFPhotosViewController {
     
-    open override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        startMovePoint = touches.first?.location(in: self.collectionView)
+    func startTimer() {
+        if timer == nil {
+            self.timer = Timer(timeInterval: 0.003, target: self, selector: #selector(autoScroll), userInfo: nil, repeats: true)
+            RunLoop.current.add(timer!, forMode: .default)
+        }
     }
     
-    open override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        
+    @objc func autoScroll() {
+        let offSetY = self.collectionView.contentOffset.y
+        if autoScrollTop == true {
+            if offSetY < 0 {
+                return
+            }
+            self.collectionView.contentOffset.y = offSetY - 1
+        }
+       
+        if autoScrollTop == false {
+            if offSetY + collectionView.height > collectionView.contentSize.height {
+                return
+            }
+            self.collectionView.contentOffset.y = offSetY + 1
+        }
     }
     
-    open override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+    func endTimer() {
+        self.timer?.invalidate()
+        self.timer = nil
+    }
+    
+    @objc func panAction(_ panGesture: UIPanGestureRecognizer) {
+        if panGesture.state == .began {
+            if let indexPath = self.collectionView.indexPathForItem(at: panGesture.location(in: self.collectionView)) {
+                beginIndexPath = indexPath
+                viewModel.isAdd = !viewModel.containsAsset(asset: viewModel.dataArray[indexPath.item])
+            }
+        }
         
+        if panGesture.state == .ended || panGesture.state == .cancelled {
+            endTimer()
+            viewModel.mergeTempSelectedItems()
+            delegate?.didSelectedItem(model: nil, selectedDataSource: viewModel.selectedDataArray)
+        }
+        
+        if panGesture.state == .changed {
+            guard let `beginIndexPath` = beginIndexPath else {
+                return
+            }
+            let point = panGesture.location(in: self.collectionView)
+            let translate = panGesture.translation(in: self.view)
+            let absX = abs(translate.x)
+            let absY = abs(translate.y)
+            if max(absX, absY) < 10 {
+                return
+            }
+            if absX > absY {
+                if translate.x < 0 {
+                    // 左
+                } else {
+                    // 右
+                }
+            } else if absY > absX {
+                if point.y < self.collectionView.contentOffset.y {
+                    autoScrollTop = true
+                    startTimer()
+                } else if point.y > self.collectionView.contentOffset.y + self.collectionView.size.height - 50 {
+                    autoScrollTop = false
+                    startTimer()
+                } else {
+                    endTimer()
+                }
+                
+                if translate.y < 0 {
+                    // 上
+                } else {
+                    // 下
+                }
+            }
+            if let indexPath = self.collectionView.indexPathForItem(at: panGesture.location(in: self.collectionView)), indexPath != preIndexPath {
+                viewModel.selectedItems(fromIndex: beginIndexPath.item, toIndex: indexPath.item)
+                preIndexPath = indexPath
+            }
+        }
     }
 }
