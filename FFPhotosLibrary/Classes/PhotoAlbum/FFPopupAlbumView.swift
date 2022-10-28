@@ -10,6 +10,7 @@ import UIKit
 import Photos
 import FFUITool
 
+
 //相册顶部弹出的相册选择页面
 open class FFPopupAlbumView: UIView {
     // 点击回调
@@ -26,7 +27,6 @@ open class FFPopupAlbumView: UIView {
     public lazy var tableView: UITableView = {
         let view = UITableView(frame: CGRect.zero, style: .plain)
         view.separatorStyle = .none
-        view.backgroundColor = UIColor.white
         view.clipsToBounds = true
         view.delegate = self
         view.dataSource = self
@@ -45,7 +45,8 @@ open class FFPopupAlbumView: UIView {
     }
     
     private func setupView() {
-        self.backgroundColor = .white
+        self.backgroundColor = .white.dynamicGray6
+        self.tableView.backgroundColor = self.backgroundColor
         
         addSubview(tableView)
         tableView.frame = self.bounds
@@ -66,14 +67,14 @@ open class FFPopupAlbumView: UIView {
             if row == 0 { return }
             let index = IndexPath(row: row > 0 ? row - 1 : 0, section: 0)
             tableView.scrollToRow(at: index, at: .bottom, animated: false)
-            UIView.animate(withDuration: 0.25) {
-                self.transform = CGAffineTransform.init(translationX: 0, y: -self.height)
-            }
+//            UIView.animate(withDuration: 0.25) {
+//                self.transform = CGAffineTransform.init(translationX: 0, y: -self.height)
+//            }
         } else {
             tableView.frame = CGRect(x: 0, y: self.top, width: width, height: 0)
-            UIView.animate(withDuration: 0.25) {
-                self.tableView.frame = CGRect(x: 0, y: self.top, width: self.width, height: albumSectionCellHeight * min(3.5, CGFloat(self.dataArray?.count ?? 0)))
-            }
+//            UIView.animate(withDuration: 0.25) {
+//                self.tableView.frame = CGRect(x: 0, y: self.top, width: self.width, height: albumSectionCellHeight * min(3.5, CGFloat(self.dataArray?.count ?? 0)))
+//            }
         }
     }
     
@@ -88,8 +89,6 @@ open class FFPopupAlbumView: UIView {
             self.removeFromSuperview()
         }
     }
-    
- 
 }
 
 extension FFPopupAlbumView: UITableViewDelegate, UITableViewDataSource {
@@ -105,12 +104,12 @@ extension FFPopupAlbumView: UITableViewDelegate, UITableViewDataSource {
         var cell: FFPopupAlbumCell? = tableView.dequeueReusableCell(withIdentifier: "FFAlbumSectionId") as? FFPopupAlbumCell
         if cell == nil {
             cell = FFPopupAlbumCell(style: .subtitle, reuseIdentifier: "FFAlbumSectionId")
-            cell?.backgroundColor = UIColor.white
+            cell?.backgroundColor = UIColor.white.dynamicGray6
         }
         
         let model : FFAlbumItem = self.dataArray![indexPath.row]
         cell!.detailTextLabel?.text = "\(model.photoAlbuSubItemsCount())"
-        cell!.textLabel?.textColor = UIColor.black
+        cell!.textLabel?.textColor = UIColor.black.dynamicWhite
         cell!.textLabel?.font = UIFont.systemFont(ofSize: 15)
         cell!.textLabel?.text = model.title()
 
@@ -123,7 +122,7 @@ extension FFPopupAlbumView: UITableViewDelegate, UITableViewDataSource {
         cell!.imageView?.contentMode = .scaleAspectFill
         cell!.imageView?.clipsToBounds = true
         cell!.imageView?.layer.cornerRadius = 5.px
-        cell!.detailTextLabel?.textColor = UIColor.gray
+        cell!.detailTextLabel?.textColor = UIColor.gray.dynamicWhite
         cell!.detailTextLabel?.font = UIFont.systemFont(ofSize: 12)
         
 
@@ -161,7 +160,7 @@ extension FFPopupAlbumView: UITableViewDelegate, UITableViewDataSource {
         guard let model:FFAlbumItem = self.dataArray?[indexPath.row] else {
             return
         }
-        hide()
+//        hide()
         didSelectPhotoAlbum?(model)
     }
 }

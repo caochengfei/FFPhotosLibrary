@@ -107,7 +107,7 @@ class FFAssetItemCell: UICollectionViewCell {
         //数量
         self.contentView.addSubview(numberLabel)
         numberLabel.isHidden = true
-        numberLabel.textColor = .white
+        numberLabel.textColor = UIColor.white.dynamicGray6
         numberLabel.textAlignment = .center
         numberLabel.font = UIFont.boldSystemFont(ofSize: 35)
         numberLabel.snp.makeConstraints { (make) in
