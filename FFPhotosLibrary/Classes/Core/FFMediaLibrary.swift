@@ -166,8 +166,8 @@ open class FFMediaLibrary: NSObject {
                     return
                 }
                 let targetDirectory = (directoryName != nil) ? FFDiskTool.createDirectory(directoryName: directoryName!).path :  NSTemporaryDirectory()
-                let targetPath = targetDirectory + "/\(NSUUID().uuidString.md5).png"
-                saveImage(currentImage: image, targetPath: targetPath)
+                var targetPath = targetDirectory + "/\(NSUUID().uuidString.md5).png"
+                targetPath = saveImage(currentImage: image, targetPath: targetPath,usePng: false)
                 DispatchQueue.main.async {
                     completion(URL(fileURLWithPath: targetPath))
                 }
@@ -268,6 +268,16 @@ open class FFMediaLibrary: NSObject {
             return nil
         }
         return thumb;
+    }
+    
+    public static func deleteItem(assets: [PHAsset]) {
+        PHPhotoLibrary.shared().performChanges({
+            PHAssetChangeRequest.deleteAssets(assets as NSFastEnumeration)
+        }, completionHandler: { (success, error) in
+//            DispatchQueue.main.async {
+//                completion(error, localIdenitifer)
+//            }
+        })
     }
 }
 
@@ -724,13 +734,63 @@ extension FFMediaLibrary {
     /// - Parameters:
     ///   - currentImage: 图片
     ///   - targetPath: 文件路径
-    public static func saveImage(currentImage: UIImage, targetPath: String, usePng: Bool = false){
-        if let imageData = usePng ? currentImage.pngData() : currentImage.jpegData(compressionQuality: 1.0) {
-            do {
-                try imageData.write(to: URL(fileURLWithPath: targetPath))
-            } catch  {
-                ffPrint("save image to tempLib error")
+    @discardableResult
+    public static func saveImage(currentImage: UIImage, targetPath: String, usePng: Bool = true) -> String {
+        autoreleasepool {
+            var savePngError: Bool = false
+            var resultPath = targetPath
+            if usePng {
+                if let imageData = currentImage.pngData() {
+                    do {
+                        var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
+                        urlPath.appendPathExtension("png")
+                        try imageData.write(to: urlPath)
+                    } catch  {
+                        ffPrint(error.localizedDescription)
+                        savePngError = true
+                    }
+                }
             }
+            if usePng,savePngError == false {
+                return resultPath
+            }
+            
+    //        if currentImage.isHeicSupported, let imageData = currentImage.heic {
+    //            do {
+    //                var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
+    //                urlPath.appendPathExtension("HEIC")
+    //                try imageData.write(to: urlPath)
+    //                resultPath = urlPath.path
+    //            } catch  {
+    //                ffPrint(error.localizedDescription)
+    //            }
+    //            return resultPath
+    //        }
+            
+            if let imageData = currentImage.jpegData(compressionQuality: 1.0) {
+                do {
+                    var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
+                    urlPath.appendPathExtension("jpeg")
+                    try imageData.write(to: urlPath)
+                    resultPath = urlPath.path
+                } catch  {
+                    ffPrint(error.localizedDescription)
+                }
+                return resultPath
+            }
+            
+            if let imageData = currentImage.pngData() {
+                do {
+                    var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
+                    urlPath.appendPathExtension("png")
+                    try imageData.write(to: urlPath)
+                } catch  {
+                    ffPrint(error.localizedDescription)
+                }
+            }
+            return resultPath
         }
     }
+        
 }
+
