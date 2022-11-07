@@ -167,7 +167,7 @@ open class FFMediaLibrary: NSObject {
                 }
                 let targetDirectory = (directoryName != nil) ? FFDiskTool.createDirectory(directoryName: directoryName!).path :  NSTemporaryDirectory()
                 var targetPath = targetDirectory + "/\(NSUUID().uuidString.md5).png"
-                targetPath = saveImage(currentImage: image, targetPath: targetPath,usePng: false)
+                targetPath = saveImage(currentImage: image, targetPath: targetPath,usePng: false,useHeic: false)
                 DispatchQueue.main.async {
                     completion(URL(fileURLWithPath: targetPath))
                 }
@@ -484,6 +484,25 @@ extension FFMediaLibrary {
             }
         }
     }
+    
+    private static func createAssets(data: Data?, complated: @escaping (PHFetchResult<PHAsset>?)->()) {
+        var assetId: String = ""
+        autoreleasepool {
+            PHPhotoLibrary.shared().performChanges {
+                guard let data = data else {
+                    return
+                }
+                let request = PHAssetCreationRequest.forAsset()
+                request.addResource(with: .photo, data: data, options: nil)
+                assetId = request.placeholderForCreatedAsset?.localIdentifier ?? ""
+            } completionHandler: { finish, error in
+                if finish {
+                    let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
+                    complated(asset)
+                }
+            }
+        }
+    }
 }
 
 //MARK: - 权限相关
@@ -729,13 +748,55 @@ extension FFMediaLibrary {
         }
     }
     
+    public static func saveImageToPhotos(for data: Data?, completion: @escaping (Error?, String?)->Void) {
+        FFAuthorizationTool.requestPhotoAuthorization { success in
+            if !success {
+                ffPrint("请打开相册权限")
+            }
+            let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
+            FFMediaLibrary.createAssets(data: data) { phAsset in
+                PHPhotoLibrary.shared().performChanges({
+                    if let phAsset = phAsset?.firstObject {
+                        let _ = PHAssetChangeRequest.init(for: phAsset)
+                    }
+                }, completionHandler: { (success, error) in
+                    DispatchQueue.main.async {
+                        completion(error, localIdenitifer)
+                    }
+                })
+            }
+        }
+    }
+    
+    public static func saveImageToCustomPhotos(for data: Data?, completion: @escaping (Error?, String?)->Void) {
+        FFAuthorizationTool.requestPhotoAuthorization { success in
+            if !success {
+                ffPrint("请打开相册权限")
+            }
+            let albumCollection = FFMediaLibrary.createCustomAssetCollectionIfNeeded()
+            let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
+            FFMediaLibrary.createAssets(data: data) { phAsset in
+                if let albumCollection = albumCollection, let phAsset = phAsset {
+                    PHPhotoLibrary.shared().performChanges({
+                        let request = PHAssetCollectionChangeRequest(for: albumCollection)
+                        request?.addAssets(phAsset)
+                    }, completionHandler: { (success, error) in
+                        DispatchQueue.main.async {
+                            completion(error, localIdenitifer)
+                        }
+                    })
+                }
+            }
+        }
+    }
+    
     
     /// 保存图片到沙盒
     /// - Parameters:
     ///   - currentImage: 图片
     ///   - targetPath: 文件路径
     @discardableResult
-    public static func saveImage(currentImage: UIImage, targetPath: String, usePng: Bool = true) -> String {
+    public static func saveImage(currentImage: UIImage, targetPath: String, usePng: Bool = true, useHeic: Bool = false) -> String {
         autoreleasepool {
             var savePngError: Bool = false
             var resultPath = targetPath
@@ -755,17 +816,21 @@ extension FFMediaLibrary {
                 return resultPath
             }
             
-    //        if currentImage.isHeicSupported, let imageData = currentImage.heic {
-    //            do {
-    //                var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
-    //                urlPath.appendPathExtension("HEIC")
-    //                try imageData.write(to: urlPath)
-    //                resultPath = urlPath.path
-    //            } catch  {
-    //                ffPrint(error.localizedDescription)
-    //            }
-    //            return resultPath
-    //        }
+            if #available(iOS 11.0, *), useHeic {
+                if currentImage.isHeicSupported, let imageData = currentImage.heic {
+                    do {
+                        var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
+                        urlPath.appendPathExtension("heic")
+                        try imageData.write(to: urlPath)
+                        resultPath = urlPath.path
+                    } catch  {
+                        ffPrint(error.localizedDescription)
+                    }
+                    return resultPath
+                }
+            } else {
+                // Fallback on earlier versions
+            }
             
             if let imageData = currentImage.jpegData(compressionQuality: 1.0) {
                 do {
