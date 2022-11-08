@@ -797,64 +797,66 @@ extension FFMediaLibrary {
     ///   - targetPath: 文件路径
     @discardableResult
     public static func saveImage(currentImage: UIImage, targetPath: String, usePng: Bool = true, useHeic: Bool = false) -> String {
-        autoreleasepool {
-            var savePngError: Bool = false
-            var resultPath = targetPath
-            if usePng {
-                if let imageData = currentImage.pngData() {
-                    do {
-                        var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
-                        urlPath.appendPathExtension("png")
-                        try imageData.write(to: urlPath)
-                    } catch  {
-                        ffPrint(error.localizedDescription)
-                        savePngError = true
-                    }
-                }
-            }
-            if usePng,savePngError == false {
-                return resultPath
-            }
-            
-            if #available(iOS 11.0, *), useHeic {
-                if currentImage.isHeicSupported, let imageData = currentImage.heic {
-                    do {
-                        var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
-                        urlPath.appendPathExtension("heic")
-                        try imageData.write(to: urlPath)
-                        resultPath = urlPath.path
-                    } catch  {
-                        ffPrint(error.localizedDescription)
-                    }
-                    return resultPath
-                }
-            } else {
-                // Fallback on earlier versions
-            }
-            
-            if let imageData = currentImage.jpegData(compressionQuality: 1.0) {
-                do {
-                    var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
-                    urlPath.appendPathExtension("jpeg")
-                    try imageData.write(to: urlPath)
-                    resultPath = urlPath.path
-                } catch  {
-                    ffPrint(error.localizedDescription)
-                }
-                return resultPath
-            }
-            
-            if let imageData = currentImage.pngData() {
-                do {
+        var error: Bool = false
+        var resultPath = targetPath
+        if usePng {
+            autoreleasepool {
+                if var imageData = currentImage.pngData() {
                     var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
                     urlPath.appendPathExtension("png")
-                    try imageData.write(to: urlPath)
-                } catch  {
-                    ffPrint(error.localizedDescription)
+                    FFDiskTool.saveFile(data: imageData, url: urlPath)
+                    imageData.removeAll()
+                } else {
+                    error = true
                 }
             }
+            if error == false {
+                return resultPath
+            }
+        }
+        
+        if useHeic {
+            autoreleasepool {
+                if currentImage.isHeicSupported, let imageData = currentImage.heic {
+                    var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
+                    urlPath.appendPathExtension("heic")
+                    FFDiskTool.saveFile(data: imageData, url: urlPath)
+                    resultPath = urlPath.path
+                } else {
+                    error = true
+                }
+            }
+            if error == false {
+                return resultPath
+            }
+        }
+       
+        autoreleasepool {
+            if let imageData = currentImage.jpegData(compressionQuality: 1.0) {
+                var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
+                urlPath.appendPathExtension("jpeg")
+                FFDiskTool.saveFile(data: imageData, url: urlPath)
+                resultPath = urlPath.path
+            } else {
+                error = true
+            }
+        }
+        
+        if error == false {
             return resultPath
         }
+       
+        autoreleasepool {
+            if let imageData = currentImage.pngData() {
+                var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
+                urlPath.appendPathExtension("png")
+                FFDiskTool.saveFile(data: imageData, url: urlPath)
+                resultPath = urlPath.path
+            } else {
+                error = true
+            }
+        }
+        return resultPath
     }
         
 }
