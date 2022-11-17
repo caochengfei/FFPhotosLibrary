@@ -383,8 +383,18 @@ extension FFMediaLibrary {
                 if collection.isKind(of: PHAssetCollection.self) , let assetCollection = collection as? PHAssetCollection {
                     
                     let fetchResult = fetchAlubmAssetCount(collection: assetCollection)
-                    if fetchResult.firstObject?.mediaType.rawValue == mediaType.rawValue {
-                        tempArr.append(assetCollection)
+                    if mediaType == .image {
+                        if fetchResult.firstObject?.mediaType.rawValue == mediaType.rawValue {
+                            tempArr.append(assetCollection)
+                        }
+                    } else if mediaType == .video {
+                        if fetchResult.firstObject?.mediaType.rawValue == mediaType.rawValue {
+                            tempArr.append(assetCollection)
+                        }
+                    } else if mediaType == .all {
+                        if fetchResult.firstObject?.mediaType == .image || fetchResult.firstObject?.mediaType == .video {
+                            tempArr.append(assetCollection)
+                        }
                     }
                 }
             }

@@ -86,7 +86,11 @@ open class FFPhotosViewController: UIViewController {
     // 配置文件
     public var config: FFPhotosConfig = FFPhotosConfig()
     // 加载的资源类型
-    public var mediaType: FFMediaLibraryType = .image
+    public var mediaType: FFMediaLibraryType = .image {
+        didSet {
+            viewModel.mediaType = mediaType
+        }
+    }
     
     public let viewModel = FFPhotosViewModel()
     
@@ -129,6 +133,7 @@ open class FFPhotosViewController: UIViewController {
         self.viewModel.config = config
         self.mediaType = mediaType
         self.delegate = delegate
+        self.viewModel.mediaType = mediaType
         
         if config.multipleSelected == true {
             self.view.addGestureRecognizer(panGesture)
@@ -142,7 +147,7 @@ open class FFPhotosViewController: UIViewController {
     open override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        viewModel.getAllMedias(mediaType: mediaType)
+        viewModel.getAllMedias()
         addPhotoChangeObserver()
     }
     

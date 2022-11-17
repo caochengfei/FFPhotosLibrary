@@ -46,7 +46,7 @@ open class FFAlbumItem: NSObject {
             case .video:
                 return "视频"
             default:
-                return "图片"
+                return assetCollection?.localizedTitle ?? "图片"
             }
         }
         return assetCollection?.localizedTitle ?? ""

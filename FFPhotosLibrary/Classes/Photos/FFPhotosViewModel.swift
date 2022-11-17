@@ -29,6 +29,8 @@ public class FFPhotosViewModel: NSObject {
     public var albumArray = [FFAlbumItem]()
     
     public var currentAlbum: FFAlbumItem?
+    
+    public var mediaType: FFMediaLibraryType = .image
         
     var isAdd: Bool = true
 }
@@ -37,21 +39,21 @@ extension FFPhotosViewModel {
     
     /// 获取默认相册
     /// - Parameter mediaType: video or image
-    public func getAllMedias(mediaType:FFMediaLibraryType) {
+    public func getAllMedias() {
         FFMediaLibrary.getDefaultAlbums(mediaType: mediaType) { success, album in
             self.albumArray.append(album)
             self.currentAlbum = album
-            self.loadMedia(with: album)
+            self.loadMedia(with: album,mediaType: self.mediaType)
             self.delegate?.didFirstLoadedMediaFinish()
-            self.getAllAlbum(mediaType: .image)
+            self.getAllAlbum()
         }
     }
     
     /// 获取相册目录
     /// - Parameter mediaType: video or image
     @discardableResult
-    public func getAllAlbum(mediaType:FFMediaLibraryType) -> [FFAlbumItem]{        
-        let array = FFMediaLibrary.getAllAlbums(mediaType: .image)
+    public func getAllAlbum() -> [FFAlbumItem]{
+        let array = FFMediaLibrary.getAllAlbums(mediaType: mediaType)
         self.albumArray.append(contentsOf: array)
         return array
     }
@@ -61,11 +63,12 @@ extension FFPhotosViewModel {
     /// - Parameters:
     ///   - album: 相册
     ///   - mediaType: 文件类型
-    public func loadMedia(with album: FFAlbumItem?, mediaType: FFMediaLibraryType = .image) {
+    public func loadMedia(with album: FFAlbumItem?, mediaType: FFMediaLibraryType? = nil) {
         guard let collection = album?.assetCollection else {
             return
         }
-        assetsArray = FFMediaLibrary.getMedia(album: collection, mediaType: mediaType)
+        let type =  mediaType != nil ? mediaType : self.mediaType
+        assetsArray = FFMediaLibrary.getMedia(album: collection, mediaType: type!)
         self.dataArray.removeAll()
         for index in 0..<assetsArray.count {
             let asset = FFAssetItem()
