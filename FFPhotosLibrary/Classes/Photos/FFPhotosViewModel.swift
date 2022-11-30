@@ -30,6 +30,8 @@ public class FFPhotosViewModel: NSObject {
     
     public var currentAlbum: FFAlbumItem?
     
+    public var preAlbum: FFAlbumItem?
+    
     public var mediaType: FFMediaLibraryType = .image
         
     var isAdd: Bool = true
@@ -43,6 +45,7 @@ extension FFPhotosViewModel {
         FFMediaLibrary.getDefaultAlbums(mediaType: mediaType) { success, album in
             self.albumArray.append(album)
             self.currentAlbum = album
+            self.preAlbum = album
             self.loadMedia(with: album,mediaType: self.mediaType)
             self.delegate?.didFirstLoadedMediaFinish()
             self.getAllAlbum()
@@ -80,6 +83,7 @@ extension FFPhotosViewModel {
         if self.config?.reversed == false {
             self.dataArray = self.dataArray.reversed()
         }
+        self.preAlbum = self.currentAlbum
         self.currentAlbum = album
         delegate?.didUpdateMediaFinish()
     }

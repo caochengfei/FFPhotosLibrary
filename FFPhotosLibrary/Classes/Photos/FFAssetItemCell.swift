@@ -71,6 +71,11 @@ class FFAssetItemCell: UICollectionViewCell {
         print("FFAssetItemCell销毁了")
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        self.imageView.image = nil
+    }
+    
     func setupUI() {
         //图片
         self.contentView.addSubview(imageView)
@@ -165,9 +170,8 @@ extension FFAssetItemCell {
     func requestImage(model: FFAssetItem?) {
         let size = CGSize(width: self.width * UIScreen.main.scale, height: self.height * UIScreen.main.scale)
         if let asset = model?.asset {
-            FFMediaLibrary.getThumbImage(asset: asset, size: size) { image in
-                self.imageView.image = image
-                model?.thumbImage = image
+            FFMediaLibrary.getThumbImage(asset: asset, size: size,isPrew: true) {[weak self] image in
+                self?.imageView.image = image
             }
         }
         if model?.asset?.mediaType == PHAssetMediaType.image {

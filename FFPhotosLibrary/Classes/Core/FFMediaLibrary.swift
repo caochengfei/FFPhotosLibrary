@@ -309,9 +309,7 @@ extension FFMediaLibrary {
             let item = FFAlbumItem()
             item.mediaType = mediaType
             item.assetCollection = album.firstObject
-            if item.photoAlbuSubItemsCount() > 0 {
-                dataArray.append(item)
-            }
+            dataArray.append(item)
         }
 
         if let album = self.getCustomFileAlbums(mediaType: mediaType) {

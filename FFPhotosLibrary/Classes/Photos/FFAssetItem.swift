@@ -32,9 +32,7 @@ open class FFAssetItem: NSObject,FFAssetItemObserverProtocol {
     public var selectNumber: BehaviorRelay<Int?> = BehaviorRelay<Int?>(value: nil)
     // PHAsset
     public var asset:PHAsset?
-        
-    public var thumbImage: UIImage?
-    
+            
     public func duration() ->TimeInterval {
         guard let asset = asset, asset.mediaType == .video else {
             return 0

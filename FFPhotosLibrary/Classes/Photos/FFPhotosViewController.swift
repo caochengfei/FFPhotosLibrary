@@ -202,6 +202,7 @@ open class FFPhotosViewController: UIViewController {
             if numberOfItem > 0 {
                 let indexPath = IndexPath(item: numberOfItem - 1, section: 0)
                 collectionView.scrollToItem(at: indexPath, at: .bottom, animated: animate)
+                scrollViewDidScroll(collectionView)
             }
         }
     }
@@ -270,7 +271,7 @@ extension FFPhotosViewController: FFPhotosViewModelProtocol {
     public func didUpdateMediaFinish() {
         collectionView.reloadData()
         if config.initScrollToBottom {
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()) {
                 self.scrollToBottom()
             }
         }
@@ -404,7 +405,7 @@ extension FFPhotosViewController {
             let translate = panGesture.translation(in: self.view)
             let absX = abs(translate.x)
             let absY = abs(translate.y)
-            if max(absX, absY) < 10 {
+            if max(absX, absY) < 15 {
                 return
             }
             if absX > absY {
