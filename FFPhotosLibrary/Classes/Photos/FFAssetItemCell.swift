@@ -68,7 +68,9 @@ class FFAssetItemCell: UICollectionViewCell {
     }
     
     deinit {
+#if DEBUG
         print("FFAssetItemCell销毁了")
+#endif
     }
     
     override func prepareForReuse() {

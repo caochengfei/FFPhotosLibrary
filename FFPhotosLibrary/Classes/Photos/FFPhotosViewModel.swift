@@ -96,6 +96,13 @@ extension FFPhotosViewModel {
             item.selectNumber.accept(nil)
         }
         selectedDataArray.removeAll()
+        
+        for item in dataArray {
+            if item.isSelected.value == true {
+                item.isSelected.accept(false)
+                item.selectNumber.accept(nil)
+            }
+        }
     }
 }
 
