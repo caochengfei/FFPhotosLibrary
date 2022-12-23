@@ -24,9 +24,6 @@ class FFAssetItemCell: UICollectionViewCell {
     weak var delegate: FFAssetItemCellProtocol?
     // rx资源释放
     var disposeBag:DisposeBag = DisposeBag()
-    
-    /// 选择框
-    var showCheckBox = true { didSet { checkBox.isHidden = !showCheckBox } }
 
     // 模型
     var assetModel : FFAssetItem? { didSet { updateData(model: assetModel) } }
@@ -46,9 +43,25 @@ class FFAssetItemCell: UICollectionViewCell {
         button.layer.masksToBounds = true
         button.setTitleColor(UIColor.green, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 14)
-        button.clickEdgeInsets = UIEdgeInsets.init(top: 20, left: 20, bottom: 20, right: 20)
+//        button.clickEdgeInsets = UIEdgeInsets.init(top: 20, left: 20, bottom: 20, right: 20)
         return button
     }()
+    
+    var showCheckBox: Bool = false {
+        didSet {
+            if showCheckBox, checkBox.superview == nil {
+                self.contentView.addSubview(checkBox)
+                checkBox.snp.makeConstraints { (make) in
+                    make.top.equalTo(self.contentView.snp.top).offset(5.px)
+                    make.right.equalTo(self.contentView.snp.right).offset(-5.px)
+                    make.size.equalTo(CGSize(width: 26.px, height: 26.px))
+                }
+            } else {
+                checkBox.removeFromSuperview()
+                checkBox.snp.removeConstraints()
+            }
+        }
+    }
     
     lazy var selectedBgView: UIView = {
         let maskView = UIView()
@@ -83,14 +96,12 @@ class FFAssetItemCell: UICollectionViewCell {
         self.contentView.addSubview(imageView)
         imageView.contentMode = .scaleAspectFill
         
-        imageView.layer.cornerRadius = 2.px
         imageView.layer.masksToBounds = true
         imageView.snp.makeConstraints { (make) in
             make.edges.equalToSuperview()
         }
         
         self.contentView.addSubview(selectedBgView)
-        selectedBgView.layer.cornerRadius = 2.px
         selectedBgView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
@@ -102,13 +113,6 @@ class FFAssetItemCell: UICollectionViewCell {
         durationLabel.snp.makeConstraints { (make) in
             make.right.equalTo(imageView.snp.right).offset(-5.px)
             make.bottom.equalTo(imageView.snp.bottom).offset(-5.px)
-        }
-        
-        self.contentView.addSubview(checkBox)
-        checkBox.snp.makeConstraints { (make) in
-            make.top.equalTo(self.contentView.snp.top).offset(5.px)
-            make.right.equalTo(self.contentView.snp.right).offset(-5.px)
-            make.size.equalTo(CGSize(width: 26.px, height: 26.px))
         }
         
         //数量

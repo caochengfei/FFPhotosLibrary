@@ -13,7 +13,7 @@ import FFUITool
 
 public struct FFPhotosConfig {
     /// 是否显示选择框
-    public var showCheckBox: Bool = true
+    public var showCheckBox: Bool = false
     /// 是否显示选中数字, 显示数字则会隐藏checkBox
     public var showCheckNumber: Bool = true
     /// 0 为无限制
@@ -313,7 +313,7 @@ extension FFPhotosViewController {
         
         let view = UICollectionView(frame: CGRect(x: 0, y: 44.px, width: self.view.height, height: self.view.height), collectionViewLayout: flowlayout)
         view.register(FFAssetItemCell.self, forCellWithReuseIdentifier: NSStringFromClass(FFAssetItemCell.self))
-        view.backgroundColor = UIColor.white.dynamicGray6
+        view.backgroundColor = "#E6E6E6".toRGB.dynamicGray6
         view.delegate = self
         view.dataSource = self
         view.showsVerticalScrollIndicator = false
