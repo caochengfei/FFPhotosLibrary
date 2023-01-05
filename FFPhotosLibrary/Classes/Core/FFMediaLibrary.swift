@@ -203,6 +203,25 @@ open class FFMediaLibrary: NSObject {
         return reqId
     }
     
+    @discardableResult
+    public static func syncThumbImage(asset: PHAsset, size: CGSize = CGSize(width: 50, height: 50) ,isPrew: Bool = false, completion: @escaping (UIImage?)->()) ->PHImageRequestID {
+        let option: PHImageRequestOptions = PHImageRequestOptions()
+        option.isNetworkAccessAllowed = true
+        option.deliveryMode = .highQualityFormat
+        option.version = .current
+        option.isSynchronous = true
+        option.resizeMode = isPrew ? .none : .fast
+        //长边最大3000
+        let targetSize = size.fitRect(imageSize: CGSize(width: asset.pixelWidth, height: asset.pixelHeight)).size
+        let reqId = PHImageManager.default().requestImage(for: asset,
+                                                          targetSize: targetSize,
+                                                          contentMode: .aspectFill,
+                                                          options: option) { (image, hash) in
+            completion(image)
+        }
+        return reqId
+    }
+    
     
     /// 获取相册内的asset集合
     /// - Parameters:
