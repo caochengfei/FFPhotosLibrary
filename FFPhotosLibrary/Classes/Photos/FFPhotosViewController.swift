@@ -334,6 +334,7 @@ extension FFPhotosViewController: PHPhotoLibraryChangeObserver {
         DispatchQueue.main.async {
             let changes = changeInstance.changeDetails(for: self.viewModel.assetsArray)
             if (changes != nil) {
+                self.cancelButtonAction()
                 self.viewModel.loadMedia(with: self.viewModel.currentAlbum, mediaType: .image)
             }
         }

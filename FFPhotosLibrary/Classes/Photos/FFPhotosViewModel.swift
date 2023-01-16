@@ -83,8 +83,10 @@ extension FFPhotosViewModel {
         if self.config?.reversed == false {
             self.dataArray = self.dataArray.reversed()
         }
-        self.preAlbum = self.currentAlbum
-        self.currentAlbum = album
+        if album != self.currentAlbum {
+            self.preAlbum = self.currentAlbum
+            self.currentAlbum = album
+        }
         delegate?.didUpdateMediaFinish()
     }
     
