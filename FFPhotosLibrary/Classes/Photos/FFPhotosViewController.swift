@@ -313,7 +313,8 @@ extension FFPhotosViewController {
         
         let view = UICollectionView(frame: CGRect(x: 0, y: 44.px, width: self.view.height, height: self.view.height), collectionViewLayout: flowlayout)
         view.register(FFAssetItemCell.self, forCellWithReuseIdentifier: NSStringFromClass(FFAssetItemCell.self))
-        view.backgroundColor = "#E6E6E6".toRGB.dynamicGray6
+//        view.backgroundColor = "#E6E6E6".toRGB.dynamicGray6
+        view.backgroundColor = UIColor.clear
         view.delegate = self
         view.dataSource = self
         view.showsVerticalScrollIndicator = false
