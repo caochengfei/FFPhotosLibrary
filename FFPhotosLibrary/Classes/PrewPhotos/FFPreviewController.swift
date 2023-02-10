@@ -125,16 +125,17 @@ public class FFPreviewController: UIViewController {
             make.top.equalToSuperview().offset(kTopSafeHeight)
         }
         
+        let itemSize = CGSize(width: view.width, height: view.height - FFScreenFit.instance().topSafeHeight - FFScreenFit.instance().bottomSafeHeight)
+        
         layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
-        layout.itemSize = CGSize(width: view.width, height: view.height)
+        layout.itemSize = itemSize
         layout.minimumLineSpacing = 0
         layout.minimumInteritemSpacing = 0
         layout.sectionInset = .zero
         
         view.layoutIfNeeded()
-        collectionView = UICollectionView(frame: CGRect(x: 0, y: 0, width: view.width, height: view.height), collectionViewLayout: layout)
-
+        collectionView = UICollectionView(frame: CGRect(x: 0, y: FFScreenFit.instance().topSafeHeight, width: itemSize.width, height: itemSize.height), collectionViewLayout: layout)
         collectionView?.delegate = self
         collectionView?.dataSource = self
         collectionView?.bounces = false

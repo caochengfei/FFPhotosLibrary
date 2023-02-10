@@ -62,12 +62,10 @@ class FFPreviewCell: UICollectionViewCell {
         return l
     }()
     
-    lazy private var sliderView: UISlider = {
-        let slider = UISlider()
-        slider.setThumbImage(UIImage(named: "sldierThumb"), for: .normal)
-        slider.addTarget(self, action: #selector(actionToChangeValue), for: .valueChanged)
-        slider.addTarget(self, action: #selector(actionToTouchUpInside), for: .touchUpInside)
-        return slider
+    
+    private lazy var sliderView: FFSliderView = {
+        let sliderView = FFSliderView(frame: .zero)
+        return sliderView
     }()
     
     @objc func actionToChangeValue(){
@@ -127,8 +125,8 @@ class FFPreviewCell: UICollectionViewCell {
         }
 
         sliderView.snp.makeConstraints { (make) in
-            make.left.equalTo(startDatelabel.snp.right).offset(15.px)
-            make.right.equalTo(endDateLabel.snp.left).offset(-15.px)
+            make.left.equalTo(startDatelabel.snp.right).offset(-40)
+            make.right.equalTo(endDateLabel.snp.left).offset(40)
             make.centerY.equalTo(playButton.snp.centerY)
             make.height.equalTo(31.px)
         }
@@ -154,6 +152,14 @@ class FFPreviewCell: UICollectionViewCell {
         playButton.clickEdgeInsets = UIEdgeInsets.init(top: 20, left: 20, bottom: 20, right: 20)
         spinner.center = CGPoint(x: self.contentView.width/2, y: self.contentView.height/2)
         spinner.color = .white
+        
+        
+        sliderView.sliderDidChange = {[weak self] (value, minValue, maxValue) in
+            self?.actionToChangeValue()
+        }
+        sliderView.sliderDidEnded = {[weak self] (value) in
+            self?.actionToPlay()
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -201,8 +207,8 @@ class FFPreviewCell: UICollectionViewCell {
         self.sliderView.isHidden = false
         
         let start:TimeInterval = 0
-        self.startDatelabel.text = "0"
-        self.endDateLabel.text = "0"
+        self.startDatelabel.text = "00:00"
+        self.endDateLabel.text = "00:00"
         self.sliderView.value = 0
         self.playButton.isSelected = false
        
@@ -234,10 +240,10 @@ class FFPreviewCell: UICollectionViewCell {
                     }
                     
                     sself.activeView.stopAnimating()
-                    sself.endDateLabel.text = "0"
+                    sself.endDateLabel.text = sself.changeTimeFormat(timeValue: CMTimeGetSeconds(item.duration))
                     
                     if let time = sself.assetmodel?.asset?.duration {
-                        sself.sliderView.maximumValue =  Float(time)
+                        sself.sliderView.maxValue = Float(time)
                     }
                 
                     sself.preview.alpha = 1
@@ -252,6 +258,19 @@ class FFPreviewCell: UICollectionViewCell {
         }
     }
     
+    private func changeTimeFormat(timeValue: Float64) -> String {
+        var string = "";
+        let time = Int(timeValue);
+        if time < 3600 {
+            let minutes = time / 60;
+            let seconds = time % 60;
+            string = String(format: "%02d:%02d", arguments: [minutes,seconds]);
+        } else {
+            string = String(format: "%2d:%2d:%2d", [time / 3600, time / 3600 / 60, (time / 3600 / 60) % 60]);
+        }
+        return string;
+    }
+    
     private func addPlayObserver(){
         playerItem?.observerProgress {[weak self] (progress) in
             guard let sself = self else {
@@ -263,6 +282,7 @@ class FFPreviewCell: UICollectionViewCell {
                 let currentValue = sself.sliderView.value
                 if progress > currentValue {
 //                    sself.startDatelabel.text = Double(progress).formatNormal(minValue: 0)
+                    sself.startDatelabel.text = sself.changeTimeFormat(timeValue: Float64(progress))
                     sself.sliderView.value = Float(progress)
                 }
             }
@@ -275,7 +295,7 @@ class FFPreviewCell: UICollectionViewCell {
                 }
                 sself.playButton.isSelected = true
                 sself.sliderView.value = 0
-                sself.startDatelabel.text = "0"
+                sself.startDatelabel.text = "00:00"
                 sself.playerItem?.seek(toTime: CMTimeMake(value: 0, timescale: 1))
             }
         }
