@@ -74,8 +74,15 @@ extension FFPhotosViewModel {
         assetsArray = FFMediaLibrary.getMedia(album: collection, mediaType: type!)
         self.dataArray.removeAll()
         for index in 0..<assetsArray.count {
+            let phAsset = assetsArray[index]
+            if config?.showRecordingVideoOnly == true, phAsset.mediaType == .video {
+                if let resource = PHAssetResource.assetResources(for: phAsset).first, resource.type == .video, resource.originalFilename.contains("RPReplay") == false {
+                    continue
+                    // 录屏
+                }
+            }
             let asset = FFAssetItem()
-            asset.asset = assetsArray[index]
+            asset.asset = phAsset
             checkSelectedStatus(asset: asset)
             self.dataArray.append(asset)
         }
@@ -119,15 +126,17 @@ extension FFPhotosViewModel {
     }
     
     func updateSelectedData(asset:FFAssetItem) {
-        if config?.multipleSelected == true {
+        if config?.multipleSelected == true, selectedDataArray.first?.asset?.mediaType == .image {
             if containsAsset(asset: asset) {
                 deleteAsset(asset: asset)
             } else {
                 addAsset(asset: asset)
             }
         } else {
-            cleanAllSelected()
-            if asset.isSelected.value == false {
+            if asset.isSelected.value == true {
+                cleanAllSelected()
+            } else {
+                cleanAllSelected()
                 addAsset(asset: asset)
             }
         }
@@ -160,12 +169,18 @@ extension FFPhotosViewModel {
     private func addAsset(asset: FFAssetItem) {
         asset.isSelected.accept(true)
         selectedDataArray.append(asset)
+        if asset.asset?.mediaType == .image {
+            dataArray.filter{($0.asset?.mediaType == .video)}.forEach({$0.enableSelect.accept(false)})
+        }
     }
     
     private func deleteAsset(asset: FFAssetItem) {
         asset.isSelected.accept(false)
         selectedDataArray.removeAll { item in
             return item.asset?.localIdentifier == asset.asset?.localIdentifier
+        }
+        if selectedDataArray.count == 0 {
+            dataArray.filter{($0.enableSelect.value == false)}.forEach({$0.enableSelect.accept(true)})
         }
     }
     
@@ -193,20 +208,22 @@ extension FFPhotosViewModel {
             if fromIndex > toIndex {
                 for i in (toIndex...fromIndex).reversed() {
                     let item = dataArray[i]
-                    item.isSelected.accept(true)
-                    if !containsAsset(asset: item) {
+                    if !containsAsset(asset: item),item.enableSelect.value == true {
                         selectedDataArray.append(item)
+                        item.isSelected.accept(true)
                     }
-//                    tempSelectedArray.append(item)
                 }
             } else {
                 for i in fromIndex...toIndex {
                     let item = dataArray[i]
-                    item.isSelected.accept(true)
-                    if !containsAsset(asset: item) {
+                    if !containsAsset(asset: item), item.enableSelect.value == true {
                         selectedDataArray.append(item)
+                        item.isSelected.accept(true)
                     }
                 }
+            }
+            if selectedDataArray.first?.asset?.mediaType == .image {
+                dataArray.filter{($0.asset?.mediaType == .video)}.forEach({$0.enableSelect.accept(false)})
             }
         } else {
             // delete
@@ -214,19 +231,22 @@ extension FFPhotosViewModel {
             if fromIndex > toIndex {
                 for i in (toIndex...fromIndex).reversed() {
                     let item = dataArray[i]
-                    item.isSelected.accept(false)
                     if containsAsset(asset: item) {
                         deleteAsset(asset: item)
+                        item.isSelected.accept(false)
                     }
                 }
             } else {
                 for i in fromIndex...toIndex {
                     let item = dataArray[i]
-                    item.isSelected.accept(false)
                     if containsAsset(asset: item) {
                         deleteAsset(asset: item)
+                        item.isSelected.accept(false)
                     }
                 }
+            }
+            if selectedDataArray.count == 0 {
+                dataArray.filter{($0.enableSelect.value == false)}.forEach({$0.enableSelect.accept(true)})
             }
             
         }

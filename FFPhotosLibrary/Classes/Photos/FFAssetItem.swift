@@ -32,6 +32,8 @@ open class FFAssetItem: NSObject,FFAssetItemObserverProtocol {
     public var selectNumber: BehaviorRelay<Int?> = BehaviorRelay<Int?>(value: nil)
     // PHAsset
     public var asset:PHAsset?
+    
+    public var enableSelect: BehaviorRelay<Bool> = BehaviorRelay<Bool>(value: true)
             
     public func duration() ->TimeInterval {
         guard let asset = asset, asset.mediaType == .video else {

@@ -679,9 +679,14 @@ extension FFMediaLibrary {
         return CGSize(width: abs(result.width), height: abs(result.height))
     }
     
-    public static func durationFormat(duration: TimeInterval) -> String {
-        return ""
-    }
+    public static func videoDuration(videoAsset: PHAsset?) -> String {
+         guard let asset = videoAsset else { return "00:00" }
+         let duration: TimeInterval = asset.duration * 60
+         let s: Int = Int(duration) % 60
+         let m: Int = Int(duration) / 60
+         let formattedDuration = String(format: "%02d:%02d", m, s)
+         return formattedDuration
+     }
 }
 
 //MARK: - 视频处理
@@ -789,6 +794,26 @@ extension FFMediaLibrary {
                 }, completionHandler: { (success, error) in
                     DispatchQueue.main.async {
                         completion(error, localIdenitifer)
+                    }
+                })
+            }
+        }
+    }
+    
+    public static func saveImageToPhotosReturnAsset(for data: Data?, completion: @escaping (Error?, PHAsset?)->Void) {
+        FFAuthorizationTool.requestPhotoAuthorization { success in
+            if !success {
+                ffPrint("请打开相册权限")
+            }
+            let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
+            FFMediaLibrary.createAssets(data: data) { phAsset in
+                PHPhotoLibrary.shared().performChanges({
+                    if let phAsset = phAsset?.firstObject {
+                        let _ = PHAssetChangeRequest.init(for: phAsset)
+                    }
+                }, completionHandler: { (success, error) in
+                    DispatchQueue.main.async {
+                        completion(error, phAsset?.firstObject)
                     }
                 })
             }

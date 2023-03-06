@@ -20,13 +20,73 @@ protocol FFAssetItemCellProtocol: AnyObject {
     func longPressAction(cell: FFAssetItemCell, data: FFAssetItem)
 }
 
+class FFAssetInfoView: UIView {
+    lazy var iconImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.tintColor = UIColor.white
+        return imageView
+    }()
+    
+    lazy var durationLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = UIColor.white
+        label.font = UIFont.systemFont(ofSize: 10)
+        return label
+    }()
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.backgroundColor = "#000000".uicolor(alpha: 0.5)
+        addSubview(iconImageView)
+        addSubview(durationLabel)
+        
+        iconImageView.snp.makeConstraints { make in
+            make.left.equalToSuperview().offset(2)
+            make.centerY.equalToSuperview()
+        }
+        
+        durationLabel.snp.makeConstraints { make in
+            make.left.equalTo(iconImageView.snp.right).offset(3)
+            make.centerY.equalToSuperview()
+        }
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+class FFAssetDisableView: UIView {
+    lazy var disableImageView: UIImageView = {
+        let disableImageView = UIImageView()
+        return disableImageView
+    }()
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        self.isUserInteractionEnabled = false
+        addSubview(disableImageView)
+        
+        disableImageView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
 class FFAssetItemCell: UICollectionViewCell {
     weak var delegate: FFAssetItemCellProtocol?
     // rx资源释放
-    var disposeBag:DisposeBag = DisposeBag()
+    var disposeBag:DisposeBag? = DisposeBag()
 
     // 模型
-    var assetModel : FFAssetItem? { didSet { updateData(model: assetModel) } }
+    var assetModel : FFAssetItem? {
+        didSet { updateData(model: assetModel) }
+    }
     
     // 图片imageView
     let imageView = UIImageView()
@@ -34,9 +94,10 @@ class FFAssetItemCell: UICollectionViewCell {
     // 数量label
     let numberLabel = UILabel()
     
-    // 时常（仅视频显示）
-    let durationLabel = UILabel()
+    let infoView = FFAssetInfoView()
     
+    let disableView = FFAssetDisableView()
+
     lazy var checkBox: UIButton = {
         let button = UIButton(type: .custom)
         button.layer.cornerRadius = 5.px
@@ -89,6 +150,8 @@ class FFAssetItemCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         self.imageView.image = nil
+        self.assetModel = nil
+        disposeBag = nil
     }
     
     func setupUI() {
@@ -101,18 +164,22 @@ class FFAssetItemCell: UICollectionViewCell {
             make.edges.equalToSuperview()
         }
         
-        self.contentView.addSubview(selectedBgView)
-        selectedBgView.snp.makeConstraints { make in
+        contentView.addSubview(infoView)
+        infoView.isHidden = true
+        infoView.snp.makeConstraints { make in
+            make.bottom.left.right.equalToSuperview()
+            make.height.equalTo(12)
+        }
+        
+        contentView.addSubview(disableView)
+        disableView.isHidden = true
+        disableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
         
-        //时长
-        self.contentView.addSubview(durationLabel)
-        durationLabel.textColor = .black
-        durationLabel.font = UIFont.systemFont(ofSize: 12)
-        durationLabel.snp.makeConstraints { (make) in
-            make.right.equalTo(imageView.snp.right).offset(-5.px)
-            make.bottom.equalTo(imageView.snp.bottom).offset(-5.px)
+        self.contentView.addSubview(selectedBgView)
+        selectedBgView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
         
         //数量
@@ -124,6 +191,7 @@ class FFAssetItemCell: UICollectionViewCell {
         numberLabel.snp.makeConstraints { (make) in
             make.center.equalToSuperview()
         }
+        
     }
     
     private func addActions() {
@@ -163,11 +231,14 @@ extension FFAssetItemCell {
         disposeBag = DisposeBag()
         _ = assetModel?.isSelected.asObservable().subscribe({[weak self] (event) in
             self?.showShadowLayer()
-        }).disposed(by: disposeBag)
+        }).disposed(by: disposeBag!)
         _ = assetModel?.selectNumber.asObservable().skip(1).subscribe({[weak self] (event) in
             self?.showShadowLayer()
-        }).disposed(by: disposeBag)
-        
+        }).disposed(by: disposeBag!)
+        _ = assetModel?.enableSelect.asObservable().subscribe({[weak self] (event) in
+            self?.disableView.isHidden = event.element ?? true
+            self?.isUserInteractionEnabled = event.element ?? true
+        }).disposed(by: disposeBag!)
         // 显示图片
         self.requestImage(model:model)
     }
@@ -181,11 +252,10 @@ extension FFAssetItemCell {
             }
         }
         if model?.asset?.mediaType == PHAssetMediaType.image {
-            self.durationLabel.isHidden = true
+            self.infoView.isHidden = true
         } else if model?.asset?.mediaType == .video{
-            self.durationLabel.isHidden = false
-            let duration: TimeInterval = model?.asset?.duration ?? 0
-            self.durationLabel.text = FFMediaLibrary.durationFormat(duration: duration)
+            self.infoView.isHidden = false
+            self.infoView.durationLabel.text = FFMediaLibrary.videoDuration(videoAsset: model?.asset)
         }
     }
     
