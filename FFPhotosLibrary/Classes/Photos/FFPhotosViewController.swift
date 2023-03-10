@@ -144,6 +144,7 @@ open class FFPhotosViewController: UIViewController {
                 make.bottom.equalToSuperview()
                 make.height.equalTo(customBottomView.height)
             })
+            self.view.bringSubviewToFront(customBottomView)
         } else {
             collectionView.snp.remakeConstraints { (make) in
                 make.left.right.top.equalToSuperview()
@@ -210,7 +211,13 @@ extension FFPhotosViewController : UICollectionViewDataSource,UICollectionViewDe
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let asset = viewModel.dataArray[indexPath.item]
         viewModel.updateSelectedData(asset: asset)
-        delegate?.didSelectedItem(model: asset, selectedDataSource: viewModel.selectedDataArray)
+        if config.multipleSelected == false {
+            // 单选直接应用
+            delegate?.didSelectedDone(selectedDataSource: viewModel.selectedDataArray)
+            viewModel.updateSelectedData(asset: asset)
+        } else {
+            delegate?.didSelectedItem(model: asset, selectedDataSource: viewModel.selectedDataArray)
+        }
     }
     
     public func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {

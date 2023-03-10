@@ -58,6 +58,7 @@ extension FFPhotosViewModel {
     public func getAllAlbum() -> [FFAlbumItem]{
         let array = FFMediaLibrary.getAllAlbums(mediaType: mediaType)
         self.albumArray.append(contentsOf: array)
+        self.albumArray.first?.isSelected = true
         return array
     }
         
@@ -80,6 +81,10 @@ extension FFPhotosViewModel {
                     continue
                     // 录屏
                 }
+                if let resource = PHAssetResource.assetResources(for: phAsset).first, resource.type == .video, resource.originalFilename.contains("RPReplay") == true, phAsset.pixelWidth > phAsset.pixelHeight {
+                    continue
+                    // 录屏
+                }
             }
             let asset = FFAssetItem()
             asset.asset = phAsset
@@ -95,23 +100,6 @@ extension FFPhotosViewModel {
             self.currentAlbum = album
         }
         delegate?.didUpdateMediaFinish()
-    }
-    
-    
-    /// 删除所有选中
-    func cleanAllSelected() {
-        for item in selectedDataArray {
-            item.isSelected.accept(false)
-            item.selectNumber.accept(nil)
-        }
-        selectedDataArray.removeAll()
-        
-        for item in dataArray {
-            if item.isSelected.value == true {
-                item.isSelected.accept(false)
-                item.selectNumber.accept(nil)
-            }
-        }
     }
 }
 
@@ -184,22 +172,35 @@ extension FFPhotosViewModel {
         }
     }
     
+    /// 删除所有选中
+    func cleanAllSelected() {
+        for item in selectedDataArray {
+            item.isSelected.accept(false)
+            item.selectNumber.accept(nil)
+        }
+        selectedDataArray.removeAll()
+        
+        for item in dataArray {
+            if item.isSelected.value == true {
+                item.isSelected.accept(false)
+                item.selectNumber.accept(nil)
+            }
+            if item.enableSelect.value == false {
+                item.enableSelect.accept(true)
+            }
+        }
+    }
+    
     private func refreshSelectStatus() {
        
     }
    
     private func sortSelectNumber() {
         //重新排序选中的位置
-        let tempIndex = selectedDataArray.count
         for i in 0..<selectedDataArray.count {
             let model = selectedDataArray[i]
             model.selectNumber.accept(i + 1)
         }
-        
-//        for i in 0..<tempSelectedArray.count {
-//            let model = tempSelectedArray[i]
-//            model.selectNumber.accept(tempIndex + i + 1)
-//        }
     }
     
     func selectedItems(fromIndex: Int, toIndex: Int) {

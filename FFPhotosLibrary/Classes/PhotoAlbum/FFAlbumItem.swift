@@ -25,6 +25,8 @@ open class FFAlbumItem: NSObject {
     
     public var mediaType: FFMediaLibraryType = .image
     
+    public var isSelected: Bool = false
+    
     private func processThumbnail() {
         guard let assetCollection = assetCollection else {
             return

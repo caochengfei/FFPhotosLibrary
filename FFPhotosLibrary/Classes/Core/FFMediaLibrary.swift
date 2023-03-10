@@ -681,7 +681,7 @@ extension FFMediaLibrary {
     
     public static func videoDuration(videoAsset: PHAsset?) -> String {
          guard let asset = videoAsset else { return "00:00" }
-         let duration: TimeInterval = asset.duration * 60
+         let duration: TimeInterval = asset.duration
          let s: Int = Int(duration) % 60
          let m: Int = Int(duration) / 60
          let formattedDuration = String(format: "%02d:%02d", m, s)

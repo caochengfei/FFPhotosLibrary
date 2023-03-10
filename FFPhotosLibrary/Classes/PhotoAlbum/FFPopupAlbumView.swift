@@ -28,6 +28,7 @@ open class FFPopupAlbumView: UIView {
         let view = UITableView(frame: CGRect.zero, style: .plain)
         view.separatorStyle = .none
         view.clipsToBounds = true
+        view.showsVerticalScrollIndicator = false
         view.delegate = self
         view.dataSource = self
         return view
@@ -103,15 +104,14 @@ extension FFPopupAlbumView: UITableViewDelegate, UITableViewDataSource {
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell: FFPopupAlbumCell? = tableView.dequeueReusableCell(withIdentifier: "FFAlbumSectionId") as? FFPopupAlbumCell
         if cell == nil {
-            cell = FFPopupAlbumCell(style: .subtitle, reuseIdentifier: "FFAlbumSectionId")
+            cell = FFPopupAlbumCell(style: .default, reuseIdentifier: "FFAlbumSectionId")
             cell?.backgroundColor = UIColor.white.dynamicGray6
         }
         
         let model : FFAlbumItem = self.dataArray![indexPath.row]
-        cell!.detailTextLabel?.text = "\(model.photoAlbuSubItemsCount())"
-        cell!.textLabel?.textColor = UIColor.black.dynamicWhite
-        cell!.textLabel?.font = UIFont.systemFont(ofSize: 15)
-        cell!.textLabel?.text = model.title()
+        cell?.titleLabel.text = model.title()
+        cell?.detailLabel.text = "\(model.photoAlbuSubItemsCount())"
+        cell?.checkmarkImage.isHidden = !model.isSelected
 
         let opt: PHImageRequestOptions = PHImageRequestOptions()
         opt.deliveryMode = .highQualityFormat
@@ -119,19 +119,13 @@ extension FFPopupAlbumView: UITableViewDelegate, UITableViewDataSource {
         opt.version = .current
         opt.isNetworkAccessAllowed = true
         
-        cell!.imageView?.contentMode = .scaleAspectFill
-        cell!.imageView?.clipsToBounds = true
-        cell!.imageView?.layer.cornerRadius = 5.px
-        cell!.detailTextLabel?.textColor = UIColor.gray.dynamicWhite
-        cell!.detailTextLabel?.font = UIFont.systemFont(ofSize: 12)
         
-
         guard let item = model.thumbnailItem else {
             cell?.imageView?.image = nil
             return cell!
         }
         
-        let size = CGSize(width: albumSectionCellHeight * UIScreen.main.scale, height: albumSectionCellHeight * UIScreen.main.scale)
+        let size = CGSize(width: albumImageItemHeight * UIScreen.main.scale, height: albumImageItemHeight * UIScreen.main.scale)
         PHCachingImageManager.default().requestImage(for: item,
                                    targetSize: size,
                                    contentMode: .aspectFill,
@@ -148,10 +142,7 @@ extension FFPopupAlbumView: UITableViewDelegate, UITableViewDataSource {
                                     if let _ = info?[PHImageErrorKey] {
                                         return
                                     }
-                                    
-                                    cell!.imageView?.image = image
-                                    cell!.setNeedsLayout()
-                                    cell!.layoutIfNeeded()
+            cell?.iconImageView.image = image
         })
         return cell!
     }
@@ -160,6 +151,8 @@ extension FFPopupAlbumView: UITableViewDelegate, UITableViewDataSource {
         guard let model:FFAlbumItem = self.dataArray?[indexPath.row] else {
             return
         }
+        self.dataArray?.forEach({$0.isSelected = false})
+        model.isSelected = true
 //        hide()
         didSelectPhotoAlbum?(model)
     }
