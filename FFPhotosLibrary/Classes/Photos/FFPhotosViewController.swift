@@ -365,11 +365,19 @@ extension FFPhotosViewController {
     
     @objc func panAction(_ panGesture: UIPanGestureRecognizer) {
         if viewModel.selectedDataArray.first?.asset?.mediaType == .video {
+            panGesture.isEnabled = false
+            panGesture.isEnabled = true
             return
         }
         if panGesture.state == .began {
             if let indexPath = self.collectionView.indexPathForItem(at: panGesture.location(in: self.collectionView)) {
                 beginIndexPath = indexPath
+                let item = viewModel.dataArray[indexPath.item]
+                if item.asset?.mediaType == .video {
+                    panGesture.isEnabled = false
+                    panGesture.isEnabled = true
+                    return
+                }
                 viewModel.isAdd = !viewModel.containsAsset(asset: viewModel.dataArray[indexPath.item])
             }
         }

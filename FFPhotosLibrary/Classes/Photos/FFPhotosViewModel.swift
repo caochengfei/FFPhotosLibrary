@@ -155,6 +155,7 @@ extension FFPhotosViewModel {
     }
     
     private func addAsset(asset: FFAssetItem) {
+        if selectedDataArray.count >= (config?.maxSelectedCount ?? UInt.max) {return}
         asset.isSelected.accept(true)
         selectedDataArray.append(asset)
         if asset.asset?.mediaType == .image {
@@ -208,24 +209,30 @@ extension FFPhotosViewModel {
             // add
             if fromIndex > toIndex {
                 for i in (toIndex...fromIndex).reversed() {
+                    if selectedDataArray.count >= (config?.maxSelectedCount ?? UInt.max) {continue}
                     let item = dataArray[i]
                     if !containsAsset(asset: item),item.enableSelect.value == true {
                         selectedDataArray.append(item)
                         item.isSelected.accept(true)
                     }
+                    if selectedDataArray.first?.asset?.mediaType == .image {
+                        dataArray.filter{($0.asset?.mediaType == .video)}.forEach({$0.enableSelect.accept(false)})
+                    }
                 }
             } else {
                 for i in fromIndex...toIndex {
+                    if selectedDataArray.count >= (config?.maxSelectedCount ?? UInt.max) {continue}
                     let item = dataArray[i]
                     if !containsAsset(asset: item), item.enableSelect.value == true {
                         selectedDataArray.append(item)
                         item.isSelected.accept(true)
                     }
+                    if selectedDataArray.first?.asset?.mediaType == .image {
+                        dataArray.filter{($0.asset?.mediaType == .video)}.forEach({$0.enableSelect.accept(false)})
+                    }
                 }
             }
-            if selectedDataArray.first?.asset?.mediaType == .image {
-                dataArray.filter{($0.asset?.mediaType == .video)}.forEach({$0.enableSelect.accept(false)})
-            }
+            
         } else {
             // delete
             // add
