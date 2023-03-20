@@ -41,14 +41,16 @@ extension FFPhotosViewModel {
     
     /// 获取默认相册
     /// - Parameter mediaType: video or image
-    public func getAllMedias() {
+    public func getAllMedias(limit: Int = 0) {
         FFMediaLibrary.getDefaultAlbums(mediaType: mediaType) { success, album in
             self.albumArray.append(album)
             self.currentAlbum = album
             self.preAlbum = album
-            self.loadMedia(with: album,mediaType: self.mediaType)
+            self.loadMedia(with: album,mediaType: self.mediaType, limit: limit)
             self.delegate?.didFirstLoadedMediaFinish()
-            self.getAllAlbum()
+            DispatchQueue.global().async {
+                self.getAllAlbum()
+            }
         }
     }
     
@@ -67,39 +69,39 @@ extension FFPhotosViewModel {
     /// - Parameters:
     ///   - album: 相册
     ///   - mediaType: 文件类型
-    public func loadMedia(with album: FFAlbumItem?, mediaType: FFMediaLibraryType? = nil) {
+    public func loadMedia(with album: FFAlbumItem?, mediaType: FFMediaLibraryType? = nil, limit: Int = 0) {
         guard let collection = album?.assetCollection else {
             return
         }
-        let type =  mediaType != nil ? mediaType : self.mediaType
-        assetsArray = FFMediaLibrary.getMedia(album: collection, mediaType: type!)
-        self.dataArray.removeAll()
-        for index in 0..<assetsArray.count {
-            let phAsset = assetsArray[index]
-            if config?.showRecordingVideoOnly == true, phAsset.mediaType == .video {
-                if let resource = PHAssetResource.assetResources(for: phAsset).first, resource.type == .video, resource.originalFilename.contains("RPReplay") == false {
-                    continue
-                    // 录屏
-                }
-                if let resource = PHAssetResource.assetResources(for: phAsset).first, resource.type == .video, resource.originalFilename.contains("RPReplay") == true, phAsset.pixelWidth > phAsset.pixelHeight {
-                    continue
-                    // 录屏
-                }
-            }
-            let asset = FFAssetItem()
-            asset.asset = phAsset
-            checkSelectedStatus(asset: asset)
-            self.dataArray.append(asset)
-        }
         
-        if self.config?.reversed == false {
-            self.dataArray = self.dataArray.reversed()
-        }
-        if album != self.currentAlbum {
-            self.preAlbum = self.currentAlbum
-            self.currentAlbum = album
-        }
-        delegate?.didUpdateMediaFinish()
+        let ascending = self.config?.reversed == true ? false : true
+        let type =  mediaType != nil ? mediaType : self.mediaType
+            self.assetsArray = FFMediaLibrary.getMedia(album: collection, mediaType: type ?? .image, ascending: ascending, limit: limit)
+                self.dataArray.removeAll()
+                for index in 0..<self.assetsArray.count {
+                    let phAsset = self.assetsArray[index]
+                    if self.config?.showRecordingVideoOnly == true, phAsset.mediaType == .video {
+                        if let resource = PHAssetResource.assetResources(for: phAsset).first, resource.type == .video, resource.originalFilename.contains("RPReplay") == false {
+                            continue
+                            // 录屏
+                        }
+                        if let resource = PHAssetResource.assetResources(for: phAsset).first, resource.type == .video, resource.originalFilename.contains("RPReplay") == true, phAsset.pixelWidth > phAsset.pixelHeight {
+                            continue
+                            // 录屏
+                        }
+                    }
+                    let asset = FFAssetItem()
+                    asset.asset = phAsset
+                    self.checkSelectedStatus(asset: asset)
+                    self.dataArray.append(asset)
+                }
+                
+                if album != self.currentAlbum {
+                    self.preAlbum = self.currentAlbum
+                    self.currentAlbum = album
+                }
+                self.delegate?.didUpdateMediaFinish()
+        
     }
 }
 

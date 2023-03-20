@@ -15,7 +15,7 @@ public struct FFPhotosConfig {
     /// 是否可以多选 默认开启
     public var multipleSelected: Bool = true
     /// 数据源是否倒序
-    public var reversed: Bool = true
+    public var reversed: Bool = false
     /// 初始化是否滚动到底部
     public var initScrollToBottom: Bool = true
     /// 列数

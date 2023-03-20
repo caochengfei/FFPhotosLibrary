@@ -228,14 +228,20 @@ open class FFMediaLibrary: NSObject {
     ///   - album: 相册
     ///   - mediaType: 类型
     /// - Returns: Phasset
-    public static func getMedia(album: PHAssetCollection, mediaType:FFMediaLibraryType = .video) ->PHFetchResult<PHAsset> {
+    public static func getMedia(album: PHAssetCollection, mediaType:FFMediaLibraryType = .video, ascending: Bool = true, limit: Int = 0) ->PHFetchResult<PHAsset> {
         let opt: PHFetchOptions = PHFetchOptions()
         switch mediaType {
         case .image:
             opt.predicate = NSPredicate(format: "mediaType=%d", PHAssetMediaType.image.rawValue)
+            opt.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: ascending)]
+            opt.fetchLimit = limit
         case .video:
             opt.predicate = NSPredicate(format: "mediaType=%d", PHAssetMediaType.video.rawValue)
+            opt.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: ascending)]
+            opt.fetchLimit = limit
         default:
+            opt.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: ascending)]
+            opt.fetchLimit = limit
             break
         }
         let assets: PHFetchResult<PHAsset> = PHAsset.fetchAssets(in: album, options: opt)
