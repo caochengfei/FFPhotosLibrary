@@ -73,34 +73,33 @@ extension FFPhotosViewModel {
         guard let collection = album?.assetCollection else {
             return
         }
-        
-        let ascending = self.config?.reversed == true ? false : true
         let type =  mediaType != nil ? mediaType : self.mediaType
-            self.assetsArray = FFMediaLibrary.getMedia(album: collection, mediaType: type ?? .image, ascending: ascending, limit: limit)
-                self.dataArray.removeAll()
-                for index in 0..<self.assetsArray.count {
-                    let phAsset = self.assetsArray[index]
-                    if self.config?.showRecordingVideoOnly == true, phAsset.mediaType == .video {
-                        if let resource = PHAssetResource.assetResources(for: phAsset).first, resource.type == .video, resource.originalFilename.contains("RPReplay") == false {
-                            continue
-                            // 录屏
-                        }
-                        if let resource = PHAssetResource.assetResources(for: phAsset).first, resource.type == .video, resource.originalFilename.contains("RPReplay") == true, phAsset.pixelWidth > phAsset.pixelHeight {
-                            continue
-                            // 录屏
-                        }
+        self.assetsArray = FFMediaLibrary.getMedia(album: collection, mediaType: type ?? .image, ascending: nil, limit: limit)
+        self.dataArray.removeAll()
+        for index in 0..<self.assetsArray.count {
+            let phAsset = self.assetsArray[index]
+            /// 筛选录屏视频的过程 对速度会有点影响
+            if self.config?.showRecordingVideoOnly == true, phAsset.mediaType == .video {
+                if phAsset.pixelWidth > phAsset.pixelHeight {
+                    continue
+                }
+                if let resource = PHAssetResource.assetResources(for: phAsset).first {
+                    if  resource.originalFilename.prefix(8) != "RPReplay"{
+                        continue
                     }
-                    let asset = FFAssetItem()
-                    asset.asset = phAsset
-                    self.checkSelectedStatus(asset: asset)
-                    self.dataArray.append(asset)
                 }
-                
-                if album != self.currentAlbum {
-                    self.preAlbum = self.currentAlbum
-                    self.currentAlbum = album
-                }
-                self.delegate?.didUpdateMediaFinish()
+            }
+            let asset = FFAssetItem()
+            asset.asset = phAsset
+            self.checkSelectedStatus(asset: asset)
+            self.dataArray.append(asset)
+        }
+        
+        if album != self.currentAlbum {
+            self.preAlbum = self.currentAlbum
+            self.currentAlbum = album
+        }
+        self.delegate?.didUpdateMediaFinish()
         
     }
 }
