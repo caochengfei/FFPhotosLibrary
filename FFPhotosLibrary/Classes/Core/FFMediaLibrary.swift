@@ -504,7 +504,7 @@ extension FFMediaLibrary {
         UserDefaults.standard.synchronize()
     }
     
-    private static func createAssets(image: UIImage, complated: @escaping (PHFetchResult<PHAsset>?)->()) {
+    private static func createAssets(image: UIImage, complated: @escaping (PHFetchResult<PHAsset>?, Error?)->()) {
         var assetId: String = ""
         autoreleasepool {
             PHPhotoLibrary.shared().performChanges {
@@ -516,15 +516,13 @@ extension FFMediaLibrary {
                 assetId = request.placeholderForCreatedAsset?.localIdentifier ?? ""
     //            assetId = PHAssetChangeRequest.creationRequestForAsset(from: image).placeholderForCreatedAsset?.localIdentifier ?? ""
             } completionHandler: { finish, error in
-                if finish {
-                    let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
-                    complated(asset)
-                }
+                let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
+                complated(asset,error)
             }
         }
     }
     
-    private static func createAssets(data: Data?, complated: @escaping (PHFetchResult<PHAsset>?)->()) {
+    private static func createAssets(data: Data?, complated: @escaping (PHFetchResult<PHAsset>?, Error?)->()) {
         var assetId: String = ""
         autoreleasepool {
             PHPhotoLibrary.shared().performChanges {
@@ -535,10 +533,8 @@ extension FFMediaLibrary {
                 request.addResource(with: .photo, data: data, options: nil)
                 assetId = request.placeholderForCreatedAsset?.localIdentifier ?? ""
             } completionHandler: { finish, error in
-                if finish {
-                    let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
-                    complated(asset)
-                }
+                let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
+                complated(asset, error)
             }
         }
     }
@@ -711,7 +707,8 @@ extension FFMediaLibrary {
     public static func saveVideoToPhotos(with path:String, completion: @escaping (Error?, String?)->Void) {
         FFAuthorizationTool.requestPhotoAuthorization { success in
             if !success {
-                ffPrint("请打开相册权限")
+                completion(NSError(domain: "请打开相册权限", code: -1), nil)
+                return
             }
             var localIdenitifer:String?
             PHPhotoLibrary.shared().performChanges({
@@ -735,7 +732,8 @@ extension FFMediaLibrary {
     public static func saveImageToPhotos(with path:String, completion: @escaping (Error?, String?)->Void) {
         FFAuthorizationTool.requestPhotoAuthorization { success in
             if !success {
-                ffPrint("请打开相册权限")
+                completion(NSError(domain: "请打开相册权限", code: -1), nil)
+                return
             }
             var localIdenitifer:String?
             PHPhotoLibrary.shared().performChanges({
@@ -751,21 +749,26 @@ extension FFMediaLibrary {
     }
     
     public static func saveImageToPhotos(with image: UIImage, completion: @escaping (Error?, String?)->Void) {
-        FFAuthorizationTool.requestPhotoAuthorization { success in
+        FFAuthorizationTool.requestPhotoAddOnlyAuthorization { success in
             if !success {
-                ffPrint("请打开相册权限")
+                completion(NSError(domain: "请打开相册权限", code: -1), nil)
+                return
             }
             let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
-            FFMediaLibrary.createAssets(image: image) { phAsset in
-                PHPhotoLibrary.shared().performChanges({
-                    if let phAsset = phAsset?.firstObject {
-                        let _ = PHAssetChangeRequest.init(for: phAsset)
-                    }
-                }, completionHandler: { (success, error) in
-                    DispatchQueue.main.async {
-                        completion(error, localIdenitifer)
-                    }
-                })
+            FFMediaLibrary.createAssets(image: image) { phAsset, error in
+                DispatchQueue.main.async {
+                    completion(error, nil)
+                }
+                
+//                PHPhotoLibrary.shared().performChanges({
+//                    if let phAsset = phAsset?.firstObject {
+//                        let _ = PHAssetChangeRequest.init(for: phAsset)
+//                    }
+//                }, completionHandler: { (success, error) in
+//                    DispatchQueue.main.async {
+//                        completion(error, localIdenitifer)
+//                    }
+//                })
             }
         }
     }
@@ -773,11 +776,12 @@ extension FFMediaLibrary {
     public static func saveImageToCustomPhotos(with image: UIImage, completion: @escaping (Error?, String?)->Void) {
         FFAuthorizationTool.requestPhotoAuthorization { success in
             if !success {
-                ffPrint("请打开相册权限")
+                completion(NSError(domain: "请打开相册权限", code: -1), nil)
+                return
             }
             let albumCollection = FFMediaLibrary.createCustomAssetCollectionIfNeeded()
             let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
-            FFMediaLibrary.createAssets(image: image) { phAsset in
+            FFMediaLibrary.createAssets(image: image) { phAsset, error in
                 if let albumCollection = albumCollection, let phAsset = phAsset {
                     PHPhotoLibrary.shared().performChanges({
                         let request = PHAssetCollectionChangeRequest(for: albumCollection)
@@ -787,47 +791,41 @@ extension FFMediaLibrary {
                             completion(error, localIdenitifer)
                         }
                     })
+                } else {
+                    DispatchQueue.main.async {
+                        completion(error, localIdenitifer)
+                    }
                 }
             }
         }
     }
     
     public static func saveImageToPhotos(for data: Data?, completion: @escaping (Error?, String?)->Void) {
-        FFAuthorizationTool.requestPhotoAuthorization { success in
+        FFAuthorizationTool.requestPhotoAddOnlyAuthorization { success in
             if !success {
-                ffPrint("请打开相册权限")
+                completion(NSError(domain: "请打开相册权限", code: -1), nil)
+                return
             }
             let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
-            FFMediaLibrary.createAssets(data: data) { phAsset in
-                PHPhotoLibrary.shared().performChanges({
-                    if let phAsset = phAsset?.firstObject {
-                        let _ = PHAssetChangeRequest.init(for: phAsset)
-                    }
-                }, completionHandler: { (success, error) in
-                    DispatchQueue.main.async {
-                        completion(error, localIdenitifer)
-                    }
-                })
+            FFMediaLibrary.createAssets(data: data) { phAsset, error in
+                DispatchQueue.main.async {
+                    completion(error, nil)
+                }
             }
         }
     }
     
     public static func saveImageToPhotosReturnAsset(for data: Data?, completion: @escaping (Error?, PHAsset?)->Void) {
-        FFAuthorizationTool.requestPhotoAuthorization { success in
+        FFAuthorizationTool.requestPhotoAddOnlyAuthorization { success in
             if !success {
-                ffPrint("请打开相册权限")
+                completion(NSError(domain: "请打开相册权限", code: -1), nil)
+                return
             }
             let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
-            FFMediaLibrary.createAssets(data: data) { phAsset in
-                PHPhotoLibrary.shared().performChanges({
-                    if let phAsset = phAsset?.firstObject {
-                        let _ = PHAssetChangeRequest.init(for: phAsset)
-                    }
-                }, completionHandler: { (success, error) in
-                    DispatchQueue.main.async {
-                        completion(error, phAsset?.firstObject)
-                    }
-                })
+            FFMediaLibrary.createAssets(data: data) { phAsset, error in
+                DispatchQueue.main.async {
+                    completion(error, phAsset?.firstObject)
+                }
             }
         }
     }
@@ -835,11 +833,12 @@ extension FFMediaLibrary {
     public static func saveImageToCustomPhotos(for data: Data?, completion: @escaping (Error?, String?)->Void) {
         FFAuthorizationTool.requestPhotoAuthorization { success in
             if !success {
-                ffPrint("请打开相册权限")
+                completion(NSError(domain: "请打开相册权限", code: -1), nil)
+                return
             }
             let albumCollection = FFMediaLibrary.createCustomAssetCollectionIfNeeded()
             let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
-            FFMediaLibrary.createAssets(data: data) { phAsset in
+            FFMediaLibrary.createAssets(data: data) { phAsset, error in
                 if let albumCollection = albumCollection, let phAsset = phAsset {
                     PHPhotoLibrary.shared().performChanges({
                         let request = PHAssetCollectionChangeRequest(for: albumCollection)
@@ -849,6 +848,10 @@ extension FFMediaLibrary {
                             completion(error, localIdenitifer)
                         }
                     })
+                } else {
+                    DispatchQueue.main.async {
+                        completion(error, localIdenitifer)
+                    }
                 }
             }
         }

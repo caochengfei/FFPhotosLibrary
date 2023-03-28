@@ -29,6 +29,8 @@ public protocol FFPhotosProtocol: AnyObject {
     func didPrewItem(model: FFAssetItem, selectedDataSource: [FFAssetItem], allDataSource: [FFAssetItem])
     
     func scrollViewDidScroll(view: UIScrollView)
+    
+    func firstRequestPhotosAuthorError()
 }
 
 // 默认实现，使协议可选
@@ -42,4 +44,7 @@ extension FFPhotosProtocol {
     public func didPrewItem(model: FFAssetItem, selectedDataSource: [FFAssetItem], allDataSource: [FFAssetItem]) {}
     
     public func scrollViewDidScroll(view: UIScrollView){}
+    
+    public func firstRequestPhotosAuthorError() {}
+
 }

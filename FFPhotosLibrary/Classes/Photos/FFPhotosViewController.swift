@@ -254,6 +254,10 @@ extension FFPhotosViewController: FFPhotosViewModelProtocol {
             }
         }
     }
+    
+    public func firstRequestPhotoAuthorError() {
+        delegate?.firstRequestPhotosAuthorError()
+    }
 }
 
 extension FFPhotosViewController: FFPhotosCustomViewActions {

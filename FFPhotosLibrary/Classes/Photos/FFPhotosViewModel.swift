@@ -12,6 +12,7 @@ import Photos
 public protocol FFPhotosViewModelProtocol: AnyObject {
     func didFirstLoadedMediaFinish()
     func didUpdateMediaFinish()
+    func firstRequestPhotoAuthorError()
 }
 
 public class FFPhotosViewModel: NSObject {
@@ -43,6 +44,9 @@ extension FFPhotosViewModel {
     /// - Parameter mediaType: video or image
     public func getAllMedias(limit: Int = 0) {
         FFMediaLibrary.getDefaultAlbums(mediaType: mediaType) { success, album in
+            if success == false {
+                self.delegate?.firstRequestPhotoAuthorError()
+            }
             self.albumArray.append(album)
             self.currentAlbum = album
             self.preAlbum = album
