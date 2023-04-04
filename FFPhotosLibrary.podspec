@@ -42,8 +42,16 @@ TODO: Add long description of the pod here.
   # s.frameworks = 'UIKit', 'MapKit'
   # s.dependency 'AFNetworking', '~> 2.3'
     s.dependency 'FFUITool'
-    s.dependency 'RxSwift', '~> 6.5'
-    s.dependency 'RxCocoa', '~> 6.5'
-    s.dependency 'SnapKit', '~> 5.6'
+    s.dependency 'RxSwift'
+    s.dependency 'RxCocoa'
+    s.dependency 'SnapKit'
+    
+    # pod spec lint FFPhotosLibrary.podspec --verbose --allow-warnings
+
+    # 发布到私有库
+    #pod repo push FFPhotosLibrary FFPhotosLibrary.podspec --allow-warnings --verbose --use-libraries --skip-tests --use-modular-headers --skip-import-validation
+    
+    #发布到公共库
+    #pod trunk push FFPhotosLibrary.podspec --allow-warnings --use-libraries
 
 end

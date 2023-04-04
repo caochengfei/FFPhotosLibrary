@@ -25,13 +25,13 @@
 
     ],
     "RxSwift": [
-      "~> 6.5"
+
     ],
     "RxCocoa": [
-      "~> 6.5"
+
     ],
     "SnapKit": [
-      "~> 5.6"
+
     ]
   },
   "swift_version": "5.0"

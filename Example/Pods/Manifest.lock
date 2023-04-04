@@ -1,9 +1,9 @@
 PODS:
   - FFPhotosLibrary (0.1.0):
     - FFUITool
-    - RxCocoa (~> 6.5)
-    - RxSwift (~> 6.5)
-    - SnapKit (~> 5.6)
+    - RxCocoa
+    - RxSwift
+    - SnapKit
   - FFUITool (0.1.1):
     - SnapKit
   - RxCocoa (6.5.0):
@@ -16,10 +16,10 @@ PODS:
 
 DEPENDENCIES:
   - FFPhotosLibrary (from `../`)
-  - FFUITool (from `~/myself_github/FFUITool`)
 
 SPEC REPOS:
   trunk:
+    - FFUITool
     - RxCocoa
     - RxRelay
     - RxSwift
@@ -28,17 +28,15 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   FFPhotosLibrary:
     :path: "../"
-  FFUITool:
-    :path: "~/myself_github/FFUITool"
 
 SPEC CHECKSUMS:
-  FFPhotosLibrary: 0643d724ecab9fbbec4feef64fcaa98b467e62d7
-  FFUITool: e2257274265ce8ff6758f6726bab61846df95e48
+  FFPhotosLibrary: 0164054496d8cc827f4d289db99abdf6192469cf
+  FFUITool: f36a703d6f9545fca846c0ebb1cc52e99bbc6b4d
   RxCocoa: 94f817b71c07517321eb4f9ad299112ca8af743b
   RxRelay: 1de1523e604c72b6c68feadedd1af3b1b4d0ecbd
   RxSwift: 5710a9e6b17f3c3d6e40d6e559b9fa1e813b2ef8
   SnapKit: e01d52ebb8ddbc333eefe2132acf85c8227d9c25
 
-PODFILE CHECKSUM: 42db8051962f549f893ba2609c21f8eb6b504fee
+PODFILE CHECKSUM: 5750c6e4c880c54bb7522f8676004a855b0869f3
 
 COCOAPODS: 1.12.0

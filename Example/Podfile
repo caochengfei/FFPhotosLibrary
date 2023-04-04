@@ -4,16 +4,8 @@ platform :ios, '10.0'
 
 target 'FFPhotosLibrary_Example' do
   pod 'FFPhotosLibrary', :path => '../'
-  pod 'FFUITool', :path => '~/myself_github/FFUITool'
+#  pod 'FFUITool', :path => '~/myself_github/FFUITool'
 
-#  target 'FFPhotosLibrary_Tests' do
-#    inherit! :search_paths
-#
-#    pod 'Quick', '~> 2.2.0'
-#    pod 'Nimble', '~> 10.0.0'
-#    pod 'FBSnapshotTestCase' , '~> 2.1.4'
-#    pod 'Nimble-Snapshots' , '~> 9.4.0'
-#  end
   
   post_install do |installer_representation|
       installer_representation.pods_project.targets.each do |target|
