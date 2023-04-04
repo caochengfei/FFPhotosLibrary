@@ -18,6 +18,7 @@ class ViewController: UIViewController {
         let config = FFPhotosConfig.init()
         let vc = FFPhotosViewController.init(config: config, delegate: self, mediaType: .image)
         vc.view.frame = self.view.frame
+        self.addChild(vc)
         self.view.addSubview(vc.view)
     }
 

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "summary": "A short description of FFPhotosLibrary.",
   "description": "TODO: Add long description of the pod here.",
-  "homepage": "https://github.com/cchengfei@outlook.com/FFPhotosLibrary",
+  "homepage": "https://github.com/caochengfei/FFPhotosLibrary",
   "license": {
     "type": "MIT",
     "file": "LICENSE"
@@ -12,7 +12,7 @@
     "cchengfei@outlook.com": "cchengfei@outlook.com"
   },
   "source": {
-    "git": "https://github.com/cchengfei@outlook.com/FFPhotosLibrary.git",
+    "git": "https://github.com/caochengfei/FFPhotosLibrary.git",
     "tag": "0.1.0"
   },
   "swift_versions": "5.0",
