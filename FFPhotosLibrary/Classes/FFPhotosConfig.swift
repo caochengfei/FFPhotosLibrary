@@ -29,7 +29,7 @@ public struct FFPhotosConfig {
     /// 选中状态的颜色
     public var selectedTitleColor: UIColor = .white
     /// 选中状态的字体
-    public var selectedTitleFont: UIFont = UIFont.boldSystemFont(ofSize: 30.px)
+    public var selectedTitleFont: UIFont = UIFont.boldSystemFont(ofSize: 30.rem)
     /// cell中标记为视频的icon
     public var videoIcon: UIImage?
     /// cell不可选中时的图片

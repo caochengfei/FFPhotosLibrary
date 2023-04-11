@@ -57,7 +57,7 @@ public class FFPreviewController: UIViewController {
     // 侧滑返回按钮
     private lazy var leftBgView :UIView = {
         let bgView = UIView()
-        bgView.frame = CGRect(x: 0, y: 0, width: 12.px, height: kScreenHeight)
+        bgView.frame = CGRect(x: 0, y: 0, width: 12.rem, height: kScreenHeight)
         bgView.backgroundColor = "#000000".toRGB.withAlphaComponent(0.0001)
         return bgView
     }()

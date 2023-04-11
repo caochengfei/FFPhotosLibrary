@@ -100,7 +100,7 @@ class FFAssetItemCell: UICollectionViewCell {
 
     lazy var checkBox: UIButton = {
         let button = UIButton(type: .custom)
-        button.layer.cornerRadius = 5.px
+        button.layer.cornerRadius = 5.rem
         button.layer.masksToBounds = true
         button.setTitleColor(UIColor.green, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 14)
@@ -113,9 +113,9 @@ class FFAssetItemCell: UICollectionViewCell {
             if showCheckBox, checkBox.superview == nil {
                 self.contentView.addSubview(checkBox)
                 checkBox.snp.makeConstraints { (make) in
-                    make.top.equalTo(self.contentView.snp.top).offset(5.px)
-                    make.right.equalTo(self.contentView.snp.right).offset(-5.px)
-                    make.size.equalTo(CGSize(width: 26.px, height: 26.px))
+                    make.top.equalTo(self.contentView.snp.top).offset(5.rem)
+                    make.right.equalTo(self.contentView.snp.right).offset(-5.rem)
+                    make.size.equalTo(CGSize(width: 26.rem, height: 26.rem))
                 }
             } else {
                 checkBox.removeFromSuperview()

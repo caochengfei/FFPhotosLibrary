@@ -106,36 +106,36 @@ class FFPreviewCell: UICollectionViewCell {
         
         contentView.addSubview(spinner)
         playButton.snp.makeConstraints { (make) in
-            make.left.equalToSuperview().inset(20.px)
-            make.bottom.equalToSuperview().inset(40.px)
-            make.size.equalTo(CGSize(width: 18.px, height: 18.px))
+            make.left.equalToSuperview().inset(20.rem)
+            make.bottom.equalToSuperview().inset(40.rem)
+            make.size.equalTo(CGSize(width: 18.rem, height: 18.rem))
         }
 
         
         startDatelabel.snp.makeConstraints { (make) in
-            make.left.equalTo(playButton.snp.right).offset(20.px)
+            make.left.equalTo(playButton.snp.right).offset(20.rem)
             make.centerY.equalTo(playButton.snp.centerY)
-            make.height.equalTo(18.px)
+            make.height.equalTo(18.rem)
         }
         
         endDateLabel.snp.makeConstraints { (make) in
-            make.right.equalToSuperview().inset(20.px)
+            make.right.equalToSuperview().inset(20.rem)
             make.centerY.equalTo(playButton.snp.centerY)
-            make.height.equalTo(18.px)
+            make.height.equalTo(18.rem)
         }
 
         sliderView.snp.makeConstraints { (make) in
             make.left.equalTo(startDatelabel.snp.right).offset(-40)
             make.right.equalTo(endDateLabel.snp.left).offset(40)
             make.centerY.equalTo(playButton.snp.centerY)
-            make.height.equalTo(31.px)
+            make.height.equalTo(31.rem)
         }
         
         preview.snp.makeConstraints({ (make) in
             make.right.equalToSuperview()
             make.left.equalToSuperview()
             make.top.equalToSuperview()
-            make.bottom.equalTo(playButton.snp.top).offset(-30.px)
+            make.bottom.equalTo(playButton.snp.top).offset(-30.rem)
         })
         
         preImageView.snp.makeConstraints { (make) in

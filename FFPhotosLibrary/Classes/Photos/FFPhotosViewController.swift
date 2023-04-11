@@ -293,7 +293,7 @@ extension FFPhotosViewController {
         flowlayout.itemSize = size
         flowlayout.scrollDirection = .vertical
         
-        let view = UICollectionView(frame: CGRect(x: 0, y: 44.px, width: self.view.height, height: self.view.height), collectionViewLayout: flowlayout)
+        let view = UICollectionView(frame: CGRect(x: 0, y: 44.rem, width: self.view.height, height: self.view.height), collectionViewLayout: flowlayout)
         view.register(FFAssetItemCell.self, forCellWithReuseIdentifier: NSStringFromClass(FFAssetItemCell.self))
 //        view.backgroundColor = "#E6E6E6".toRGB.dynamicGray6
         view.backgroundColor = UIColor.clear
