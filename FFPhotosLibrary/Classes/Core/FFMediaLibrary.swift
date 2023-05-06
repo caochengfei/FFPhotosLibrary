@@ -504,38 +504,32 @@ extension FFMediaLibrary {
         UserDefaults.standard.synchronize()
     }
     
-    private static func createAssets(image: UIImage, complated: @escaping (PHFetchResult<PHAsset>?, Error?)->()) {
+    private static func createAssets(image: UIImage, complated: @escaping (String, Error?)->()) {
         var assetId: String = ""
-        autoreleasepool {
-            PHPhotoLibrary.shared().performChanges {
-                guard let pngData = image.pngData() else {
-                    return
-                }
-                let request = PHAssetCreationRequest.forAsset()
-                request.addResource(with: .photo, data: pngData, options: nil)
-                assetId = request.placeholderForCreatedAsset?.localIdentifier ?? ""
-    //            assetId = PHAssetChangeRequest.creationRequestForAsset(from: image).placeholderForCreatedAsset?.localIdentifier ?? ""
-            } completionHandler: { finish, error in
-                let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
-                complated(asset,error)
+        PHPhotoLibrary.shared().performChanges {
+            guard let pngData = image.pngData() else {
+                return
             }
+            let request = PHAssetCreationRequest.forAsset()
+            request.addResource(with: .photo, data: pngData, options: nil)
+            assetId = request.placeholderForCreatedAsset?.localIdentifier ?? ""
+        } completionHandler: { finish, error in
+            complated(assetId,error)
         }
     }
     
-    private static func createAssets(data: Data?, complated: @escaping (PHFetchResult<PHAsset>?, Error?)->()) {
+    private static func createAssets(data: Data?, complated: @escaping (String, Error?)->()) {
         var assetId: String = ""
-        autoreleasepool {
-            PHPhotoLibrary.shared().performChanges {
-                guard let data = data else {
-                    return
-                }
-                let request = PHAssetCreationRequest.forAsset()
-                request.addResource(with: .photo, data: data, options: nil)
-                assetId = request.placeholderForCreatedAsset?.localIdentifier ?? ""
-            } completionHandler: { finish, error in
-                let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
-                complated(asset, error)
+        PHPhotoLibrary.shared().performChanges {
+            guard let data = data else {
+                return
             }
+            let request = PHAssetCreationRequest.forAsset()
+            request.addResource(with: .photo, data: data, options: nil)
+            assetId = request.placeholderForCreatedAsset?.localIdentifier ?? ""
+        } completionHandler: { finish, error in
+            let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
+            complated(assetId,error)
         }
     }
 }
@@ -781,11 +775,12 @@ extension FFMediaLibrary {
             }
             let albumCollection = FFMediaLibrary.createCustomAssetCollectionIfNeeded()
             let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
-            FFMediaLibrary.createAssets(image: image) { phAsset, error in
-                if let albumCollection = albumCollection, let phAsset = phAsset {
+            FFMediaLibrary.createAssets(image: image) { assetId, error in
+                let assets = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
+                if let albumCollection = albumCollection {
                     PHPhotoLibrary.shared().performChanges({
                         let request = PHAssetCollectionChangeRequest(for: albumCollection)
-                        request?.addAssets(phAsset)
+                        request?.addAssets(assets)
                     }, completionHandler: { (success, error) in
                         DispatchQueue.main.async {
                             completion(error, localIdenitifer)
@@ -806,8 +801,7 @@ extension FFMediaLibrary {
                 completion(NSError(domain: "请打开相册权限", code: -1), nil)
                 return
             }
-            let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
-            FFMediaLibrary.createAssets(data: data) { phAsset, error in
+            FFMediaLibrary.createAssets(data: data) { assetId, error in
                 DispatchQueue.main.async {
                     completion(error, nil)
                 }
@@ -822,9 +816,10 @@ extension FFMediaLibrary {
                 return
             }
             let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
-            FFMediaLibrary.createAssets(data: data) { phAsset, error in
+            FFMediaLibrary.createAssets(data: data) { assetId, error in
                 DispatchQueue.main.async {
-                    completion(error, phAsset?.firstObject)
+                    let assets = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
+                    completion(error, assets.firstObject)
                 }
             }
         }
@@ -838,11 +833,12 @@ extension FFMediaLibrary {
             }
             let albumCollection = FFMediaLibrary.createCustomAssetCollectionIfNeeded()
             let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
-            FFMediaLibrary.createAssets(data: data) { phAsset, error in
-                if let albumCollection = albumCollection, let phAsset = phAsset {
+            FFMediaLibrary.createAssets(data: data) { assetId, error in
+                let assets = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
+                if let albumCollection = albumCollection {
                     PHPhotoLibrary.shared().performChanges({
                         let request = PHAssetCollectionChangeRequest(for: albumCollection)
-                        request?.addAssets(phAsset)
+                        request?.addAssets(assets)
                     }, completionHandler: { (success, error) in
                         DispatchQueue.main.async {
                             completion(error, localIdenitifer)
