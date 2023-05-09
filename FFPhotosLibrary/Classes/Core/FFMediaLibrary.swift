@@ -506,31 +506,36 @@ extension FFMediaLibrary {
     
     private static func createAssets(image: UIImage, complated: @escaping (String, Error?)->()) {
         var assetId: String = ""
-        PHPhotoLibrary.shared().performChanges {
-            guard let pngData = image.pngData() else {
-                return
+        do {
+            try PHPhotoLibrary.shared().performChangesAndWait {
+                guard let pngData = image.pngData() else {
+                    return
+                }
+                let request = PHAssetCreationRequest.forAsset()
+                request.addResource(with: .photo, data: pngData, options: nil)
+                assetId = request.placeholderForCreatedAsset?.localIdentifier ?? ""
             }
-            let request = PHAssetCreationRequest.forAsset()
-            request.addResource(with: .photo, data: pngData, options: nil)
-            assetId = request.placeholderForCreatedAsset?.localIdentifier ?? ""
-        } completionHandler: { finish, error in
+        } catch {
             complated(assetId,error)
         }
+        complated(assetId,nil)
     }
     
     private static func createAssets(data: Data?, complated: @escaping (String, Error?)->()) {
         var assetId: String = ""
-        PHPhotoLibrary.shared().performChanges {
-            guard let data = data else {
-                return
+        do {
+            try PHPhotoLibrary.shared().performChangesAndWait {
+                guard let data = data else {
+                    return
+                }
+                let request = PHAssetCreationRequest.forAsset()
+                request.addResource(with: .photo, data: data, options: nil)
+                assetId = request.placeholderForCreatedAsset?.localIdentifier ?? ""
             }
-            let request = PHAssetCreationRequest.forAsset()
-            request.addResource(with: .photo, data: data, options: nil)
-            assetId = request.placeholderForCreatedAsset?.localIdentifier ?? ""
-        } completionHandler: { finish, error in
-            let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
+        } catch {
             complated(assetId,error)
         }
+        complated(assetId,nil)
     }
 }
 
