@@ -301,8 +301,16 @@ open class FFMediaLibrary: NSObject {
         return thumb;
     }
     
-    public static func deleteItem(assets: [PHAsset]) {
+    public static func deleteItem(assetIdentifiers: [String]) {
         PHPhotoLibrary.shared().performChanges({
+            let result = PHAsset.fetchAssets(withLocalIdentifiers: assetIdentifiers, options: nil)
+            var assets = [PHAsset]()
+            result.enumerateObjects { item, idx, _ in
+                let canDelete = item.canPerform(.delete)
+                if canDelete {
+                    assets.append(item)
+                }
+            }
             PHAssetChangeRequest.deleteAssets(assets as NSFastEnumeration)
         }, completionHandler: { (success, error) in
 //            DispatchQueue.main.async {
