@@ -171,6 +171,7 @@ open class FFPhotosViewController: UIViewController {
             let numberOfItem = collectionView.numberOfItems(inSection: 0);
             if numberOfItem > 0 {
                 let indexPath = IndexPath(item: numberOfItem - 1, section: 0)
+                collectionView.layoutIfNeeded()
                 collectionView.scrollToItem(at: indexPath, at: .bottom, animated: animate)
                 scrollViewDidScroll(collectionView)
             }
