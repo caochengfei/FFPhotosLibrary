@@ -142,9 +142,8 @@ class FFAssetItemCell: UICollectionViewCell {
     }
     
     deinit {
-#if DEBUG
-        print("FFAssetItemCell销毁了")
-#endif
+        //        let fileName: String = (#file as NSString).lastPathComponent
+        //        ffPrint("\(fileName) - deinit")
     }
     
     override func prepareForReuse() {
