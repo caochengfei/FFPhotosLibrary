@@ -10,6 +10,7 @@ import AssetsLibrary
 import Photos
 import AVFoundation
 import FFUITool
+import ImageIO
 
 public enum FFMediaLibraryType : Int {
     case all = 0
@@ -879,20 +880,20 @@ extension FFMediaLibrary {
     ///   - targetPath: 文件路径
     @discardableResult
     public static func saveImage(currentImage: UIImage, targetPath: String, usePng: Bool = true, useHeic: Bool = false) -> String {
-        var error: Bool = false
+        var saveError: Bool = false
         var resultPath = targetPath
         if usePng {
             autoreleasepool {
-                if var imageData = currentImage.pngData() {
-                    var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
-                    urlPath.appendPathExtension("png")
-                    FFDiskTool.saveFile(data: imageData, url: urlPath)
-                    imageData.removeAll()
-                } else {
-                    error = true
+                var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
+                urlPath.appendPathExtension("png")
+                do {
+                    try saveFile(fileUrl: urlPath, image: currentImage, fileType: "public.png" as CFString)
+                    resultPath = urlPath.path
+                } catch  {
+                    saveError = true
                 }
             }
-            if error == false {
+            if saveError == false {
                 return resultPath
             }
         }
@@ -905,10 +906,10 @@ extension FFMediaLibrary {
                     FFDiskTool.saveFile(data: imageData, url: urlPath)
                     resultPath = urlPath.path
                 } else {
-                    error = true
+                    saveError = true
                 }
             }
-            if error == false {
+            if saveError == false {
                 return resultPath
             }
         }
@@ -920,11 +921,11 @@ extension FFMediaLibrary {
                 FFDiskTool.saveFile(data: imageData, url: urlPath)
                 resultPath = urlPath.path
             } else {
-                error = true
+                saveError = true
             }
         }
         
-        if error == false {
+        if saveError == false {
             return resultPath
         }
        
@@ -935,10 +936,24 @@ extension FFMediaLibrary {
                 FFDiskTool.saveFile(data: imageData, url: urlPath)
                 resultPath = urlPath.path
             } else {
-                error = true
+                saveError = true
             }
         }
         return resultPath
+    }
+    
+    private static func saveFile (fileUrl:URL, image:UIImage, fileType:CFString) throws {
+        let url = fileUrl as CFURL
+        let destination = CGImageDestinationCreateWithURL(url, fileType, 1, nil);
+        if nil==destination {
+            throw NSError(domain: "destination == nil", code: -1)
+        }
+        
+        if nil == image.cgImage {
+            throw NSError(domain: "image.cgImage = nil", code: -1)
+        }
+        CGImageDestinationAddImage(destination!, image.cgImage!, nil)
+        CGImageDestinationFinalize(destination!)
     }
         
 }
