@@ -302,7 +302,7 @@ open class FFMediaLibrary: NSObject {
         return thumb;
     }
     
-    public static func deleteItem(assetIdentifiers: [String]) {
+    public static func deleteItem(assetIdentifiers: [String],completion: @escaping (Bool, Error?) -> Void) {
         PHPhotoLibrary.shared().performChanges({
             let result = PHAsset.fetchAssets(withLocalIdentifiers: assetIdentifiers, options: nil)
             var assets = [PHAsset]()
@@ -314,10 +314,14 @@ open class FFMediaLibrary: NSObject {
             }
             PHAssetChangeRequest.deleteAssets(assets as NSFastEnumeration)
         }, completionHandler: { (success, error) in
-//            DispatchQueue.main.async {
-//                completion(error, localIdenitifer)
-//            }
+            DispatchQueue.main.async {
+                completion(success, error)
+            }
         })
+    }
+    
+    public static func selectedItems(assetIdentifiers: [String]) -> PHFetchResult<PHAsset> {
+        return PHAsset.fetchAssets(withLocalIdentifiers: assetIdentifiers, options: nil)
     }
 }
 
