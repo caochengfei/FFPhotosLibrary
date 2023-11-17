@@ -508,53 +508,19 @@ extension FFMediaLibrary {
         return album.firstObject
     }
     
+    
+    /// 获取自定义相册的id
+    /// - Returns: Identidier
     private static func getLocalIdentifier() -> String {
         return UserDefaults.standard.string(forKey: "AlbumLocalIdentidier") ?? ""
     }
     
+    
+    /// 设置自定义相册的id
+    /// - Parameter identifier: 标识符
     private static func setLocalIdentifier(identifier: String) {
         UserDefaults.standard.set(identifier, forKey: "AlbumLocalIdentidier")
         UserDefaults.standard.synchronize()
-    }
-    
-    private static func createAssets(image: UIImage, createDate: Date? = nil, complated: @escaping (String, Error?)->()) {
-        var assetId: String = ""
-        do {
-            try PHPhotoLibrary.shared().performChangesAndWait {
-                guard let pngData = image.pngData() else {
-                    return
-                }
-                let request = PHAssetCreationRequest.forAsset()
-                request.addResource(with: .photo, data: pngData, options: nil)
-                if let date = createDate {
-                    request.creationDate = date
-                }
-                assetId = request.placeholderForCreatedAsset?.localIdentifier ?? ""
-            }
-        } catch {
-            complated(assetId,error)
-        }
-        complated(assetId,nil)
-    }
-    
-    private static func createAssets(data: Data?,createDate: Date? = nil, complated: @escaping (String, Error?)->()) {
-        var assetId: String = ""
-        do {
-            try PHPhotoLibrary.shared().performChangesAndWait {
-                guard let data = data else {
-                    return
-                }
-                let request = PHAssetCreationRequest.forAsset()
-                request.addResource(with: .photo, data: data, options: nil)
-                if let date = createDate {
-                    request.creationDate = date
-                }
-                assetId = request.placeholderForCreatedAsset?.localIdentifier ?? ""
-            }
-        } catch {
-            complated(assetId,error)
-        }
-        complated(assetId,nil)
     }
 }
 
@@ -698,7 +664,6 @@ extension FFMediaLibrary {
                let image = UIImage(contentsOfFile: path) {
                 return image.size
             }
-            let lastPathComponent = videoAsset.url.lastPathComponent
             return CGSize.zero
         }
         let result = size.applying(track!.preferredTransform)
@@ -747,7 +712,7 @@ extension FFMediaLibrary {
     /// - Parameters:
     ///   - path: from文件路径
     ///   - completion: 回调
-    public static func saveImageToPhotos(with path:String, completion: @escaping (Error?, String?)->Void) {
+    public static func saveImageToPhotosWithPath(with path:String, completion: @escaping (Error?, String?)->Void) {
         FFAuthorizationTool.requestPhotoAuthorization { success in
             if !success {
                 completion(NSError(domain: "请打开相册权限", code: -1), nil)
@@ -766,32 +731,22 @@ extension FFMediaLibrary {
         }
     }
     
-    public static func saveImageToPhotos(with image: UIImage, createDate: Date? = nil, completion: @escaping (Error?, String?)->Void) {
+    public static func saveImageToPhotosWithImage(with image: UIImage, createDate: Date? = nil, completion: @escaping (Error?, String?)->Void) {
         FFAuthorizationTool.requestPhotoAddOnlyAuthorization { success in
             if !success {
                 completion(NSError(domain: "请打开相册权限", code: -1), nil)
                 return
             }
             let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
-            FFMediaLibrary.createAssets(image: image, createDate: createDate) { phAsset, error in
+            PHAsset.asyncCreateAssets(image: image, createDate: createDate) { assetId, error in
                 DispatchQueue.main.async {
                     completion(error, nil)
                 }
-                
-//                PHPhotoLibrary.shared().performChanges({
-//                    if let phAsset = phAsset?.firstObject {
-//                        let _ = PHAssetChangeRequest.init(for: phAsset)
-//                    }
-//                }, completionHandler: { (success, error) in
-//                    DispatchQueue.main.async {
-//                        completion(error, localIdenitifer)
-//                    }
-//                })
             }
         }
     }
     
-    public static func saveImageToCustomPhotos(with image: UIImage, createDate: Date? = nil, completion: @escaping (Error?, String?)->Void) {
+    public static func saveImageToCustomPhotosWithImage(with image: UIImage, createDate: Date? = nil, completion: @escaping (Error?, String?)->Void) {
         FFAuthorizationTool.requestPhotoAuthorization { success in
             if !success {
                 completion(NSError(domain: "请打开相册权限", code: -1), nil)
@@ -799,7 +754,7 @@ extension FFMediaLibrary {
             }
             let albumCollection = FFMediaLibrary.createCustomAssetCollectionIfNeeded()
             let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
-            FFMediaLibrary.createAssets(image: image, createDate: createDate) { assetId, error in
+            PHAsset.asyncCreateAssets(image: image, createDate: createDate) { assetId, error in
                 let assets = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
                 if let albumCollection = albumCollection {
                     PHPhotoLibrary.shared().performChanges({
@@ -819,13 +774,13 @@ extension FFMediaLibrary {
         }
     }
     
-    public static func saveImageToPhotos(for data: Data?, createDate: Date? = nil, completion: @escaping (Error?, String?)->Void) {
+    public static func saveImageToPhotosWithData(with data: Data?, createDate: Date? = nil, completion: @escaping (Error?, String?)->Void) {
         FFAuthorizationTool.requestPhotoAddOnlyAuthorization { success in
             if !success {
                 completion(NSError(domain: "请打开相册权限", code: -1), nil)
                 return
             }
-            FFMediaLibrary.createAssets(data: data, createDate: createDate) { assetId, error in
+            PHAsset.asyncCreateAssets(data: data, createDate: createDate) { assetId, error in
                 DispatchQueue.main.async {
                     completion(error, nil)
                 }
@@ -833,14 +788,13 @@ extension FFMediaLibrary {
         }
     }
     
-    public static func saveImageToPhotosReturnAsset(for data: Data?, createDate: Date? = nil, completion: @escaping (Error?, PHAsset?)->Void) {
+    public static func syncSaveImageToPhotosWithDataAndReturnAsset(for data: Data?, createDate: Date? = nil, completion: @escaping (Error?, PHAsset?)->Void) {
         FFAuthorizationTool.requestPhotoAddOnlyAuthorization { success in
             if !success {
                 completion(NSError(domain: "请打开相册权限", code: -1), nil)
                 return
             }
-            let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
-            FFMediaLibrary.createAssets(data: data, createDate: createDate) { assetId, error in
+            PHAsset.syncCreateAssets(data: data, createDate: createDate) { assetId, error in
                 DispatchQueue.main.async {
                     let assets = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
                     completion(error, assets.firstObject)
@@ -849,7 +803,7 @@ extension FFMediaLibrary {
         }
     }
     
-    public static func saveImageToCustomPhotos(for data: Data?,createDate: Date? = nil, completion: @escaping (Error?, String?)->Void) {
+    public static func syncSaveImageWithDataToCustomPhotos(for data: Data?,createDate: Date? = nil, completion: @escaping (Error?, String?)->Void) {
         FFAuthorizationTool.requestPhotoAuthorization { success in
             if !success {
                 completion(NSError(domain: "请打开相册权限", code: -1), nil)
@@ -857,7 +811,37 @@ extension FFMediaLibrary {
             }
             let albumCollection = FFMediaLibrary.createCustomAssetCollectionIfNeeded()
             let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
-            FFMediaLibrary.createAssets(data: data, createDate: createDate) { assetId, error in
+            PHAsset.syncCreateAssets(data: data, createDate: createDate) { assetId, error in
+                
+                let assets = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
+                if let albumCollection = albumCollection {
+                    PHPhotoLibrary.shared().performChanges({
+                        let request = PHAssetCollectionChangeRequest(for: albumCollection)
+                        request?.addAssets(assets)
+                    }, completionHandler: { (success, error) in
+                        DispatchQueue.main.async {
+                            completion(error, localIdenitifer)
+                        }
+                    })
+                } else {
+                    DispatchQueue.main.async {
+                        completion(error, localIdenitifer)
+                    }
+                }
+            }
+        }
+    }
+    
+    public static func asyncSaveImageWithDataToCustomPhotos(for data: Data?,createDate: Date? = nil, completion: @escaping (Error?, String?)->Void) {
+        FFAuthorizationTool.requestPhotoAuthorization { success in
+            if !success {
+                completion(NSError(domain: "请打开相册权限", code: -1), nil)
+                return
+            }
+            let albumCollection = FFMediaLibrary.createCustomAssetCollectionIfNeeded()
+            let localIdenitifer:String = FFMediaLibrary.getLocalIdentifier()
+            PHAsset.asyncCreateAssets(data: data, createDate: createDate) { assetId, error in
+                
                 let assets = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
                 if let albumCollection = albumCollection {
                     PHPhotoLibrary.shared().performChanges({
