@@ -334,7 +334,7 @@ extension FFMediaLibrary {
         let item = FFAlbumItem()
         item.mediaType = mediaType
         item.isDefaultAlbum = true
-        FFAuthorizationTool.requestPhotoAuthorization { success in
+        FFAuthorizationTool.requestPhotoAuthorization(for: .readWrite, result: { success in
             if success {
                 item.assetCollection = self.getAllPhotoAlbum(mediaType: mediaType).firstObject
                 result(success,item)
@@ -342,7 +342,7 @@ extension FFMediaLibrary {
                 item.assetCollection = nil
                 result(false, item)
             }
-        }
+        })
     }
     
     ///获取自定义的所有相册
@@ -688,7 +688,7 @@ extension FFMediaLibrary {
     ///   - path: from文件路径
     ///   - completion: 回调
     public static func saveVideoToPhotos(with path:String, completion: @escaping (Error?, String?)->Void) {
-        FFAuthorizationTool.requestPhotoAuthorization { success in
+        FFAuthorizationTool.requestPhotoAuthorization(for: .readWrite, result: { success in
             if !success {
                 completion(NSError(domain: "请打开相册权限", code: -1), nil)
                 return
@@ -704,7 +704,8 @@ extension FFMediaLibrary {
                     completion(error, localIdenitifer)
                 }
             })
-        }
+        })
+          
     }
     
     
@@ -713,7 +714,7 @@ extension FFMediaLibrary {
     ///   - path: from文件路径
     ///   - completion: 回调
     public static func saveImageToPhotosWithPath(with path:String, completion: @escaping (Error?, String?)->Void) {
-        FFAuthorizationTool.requestPhotoAuthorization { success in
+        FFAuthorizationTool.requestPhotoAuthorization(for: .readWrite, result: { success in
             if !success {
                 completion(NSError(domain: "请打开相册权限", code: -1), nil)
                 return
@@ -728,11 +729,11 @@ extension FFMediaLibrary {
                     completion(error, localIdenitifer)
                 }
             })
-        }
+        })
     }
     
     public static func saveImageToPhotosWithImage(with image: UIImage, createDate: Date? = nil, completion: @escaping (Error?, String?)->Void) {
-        FFAuthorizationTool.requestPhotoAddOnlyAuthorization { success in
+        FFAuthorizationTool.requestPhotoAuthorization(for: .addOnly, result: { success in
             if !success {
                 completion(NSError(domain: "请打开相册权限", code: -1), nil)
                 return
@@ -743,11 +744,11 @@ extension FFMediaLibrary {
                     completion(error, nil)
                 }
             }
-        }
+        })
     }
     
     public static func saveImageToCustomPhotosWithImage(with image: UIImage, createDate: Date? = nil, completion: @escaping (Error?, String?)->Void) {
-        FFAuthorizationTool.requestPhotoAuthorization { success in
+        FFAuthorizationTool.requestPhotoAuthorization(for: .readWrite, result: { success in
             if !success {
                 completion(NSError(domain: "请打开相册权限", code: -1), nil)
                 return
@@ -771,11 +772,11 @@ extension FFMediaLibrary {
                     }
                 }
             }
-        }
+        })
     }
     
     public static func saveImageToPhotosWithData(with data: Data?, createDate: Date? = nil, completion: @escaping (Error?, String?)->Void) {
-        FFAuthorizationTool.requestPhotoAddOnlyAuthorization { success in
+        FFAuthorizationTool.requestPhotoAuthorization(for: .addOnly, result: { success in
             if !success {
                 completion(NSError(domain: "请打开相册权限", code: -1), nil)
                 return
@@ -785,11 +786,11 @@ extension FFMediaLibrary {
                     completion(error, nil)
                 }
             }
-        }
+        })
     }
     
     public static func syncSaveImageToPhotosWithDataAndReturnAsset(for data: Data?, createDate: Date? = nil, completion: @escaping (Error?, PHAsset?)->Void) {
-        FFAuthorizationTool.requestPhotoAddOnlyAuthorization { success in
+        FFAuthorizationTool.requestPhotoAuthorization(for: .addOnly, result: { success in
             if !success {
                 completion(NSError(domain: "请打开相册权限", code: -1), nil)
                 return
@@ -800,11 +801,11 @@ extension FFMediaLibrary {
                     completion(error, assets.firstObject)
                 }
             }
-        }
+        })
     }
     
     public static func syncSaveImageWithDataToCustomPhotos(for data: Data?,createDate: Date? = nil, completion: @escaping (Error?, String?)->Void) {
-        FFAuthorizationTool.requestPhotoAuthorization { success in
+        FFAuthorizationTool.requestPhotoAuthorization(for: .readWrite, result: { success in
             if !success {
                 completion(NSError(domain: "请打开相册权限", code: -1), nil)
                 return
@@ -829,11 +830,11 @@ extension FFMediaLibrary {
                     }
                 }
             }
-        }
+        })
     }
     
     public static func asyncSaveImageWithDataToCustomPhotos(for data: Data?,createDate: Date? = nil, completion: @escaping (Error?, String?)->Void) {
-        FFAuthorizationTool.requestPhotoAuthorization { success in
+        FFAuthorizationTool.requestPhotoAuthorization(for: .readWrite, result: { success in
             if !success {
                 completion(NSError(domain: "请打开相册权限", code: -1), nil)
                 return
@@ -858,7 +859,7 @@ extension FFMediaLibrary {
                     }
                 }
             }
-        }
+        })
     }
     
     

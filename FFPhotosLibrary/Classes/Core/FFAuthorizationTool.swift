@@ -9,37 +9,27 @@ import Foundation
 import Photos
 import FFUITool
 
+public enum FFAccessLevel : Int, @unchecked Sendable {
+    case addOnly = 1
+    case readWrite = 2
+    
+    @available(iOS 14, *)
+    var phAccessLevel: PHAccessLevel {
+        switch self {
+        case .addOnly:
+            return PHAccessLevel.addOnly
+        default:
+            return PHAccessLevel.readWrite
+        }
+    }
+}
+
+
 public class FFAuthorizationTool {
-    public static func requestPhotoAuthorization(result: @escaping (_ success: Bool)->()) {
+    public static func requestPhotoAuthorization(for accessLevel: FFAccessLevel, result: @escaping (_ success: Bool)->()) {
         var status = PHPhotoLibrary.authorizationStatus()
         if #available(iOS 14, *) {
-            status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
-        }
-        
-        switch status {
-        case .authorized:
-            result(true)
-            break
-        case .denied, .restricted:
-            ffPrint("未获得相册权限")
-            result(false)
-            break
-        case .notDetermined:
-            asyncRequestPhotoAuthorization(result: result)
-            break
-        case .limited:
-            ffPrint("选择了单个相册权限")
-            result(true)
-            break
-        default: break
-            
-        }
-    }
-    
-    public static func requestPhotoAddOnlyAuthorization(result: @escaping (_ success: Bool)->()) {
-        var status = PHPhotoLibrary.authorizationStatus()
-        if #available(iOS 14, *) {
-            status = PHPhotoLibrary.authorizationStatus(for: .addOnly)
+            status = PHPhotoLibrary.authorizationStatus(for: accessLevel.phAccessLevel)
         }
         switch status {
         case .authorized:
@@ -50,7 +40,7 @@ public class FFAuthorizationTool {
             result(false)
             break
         case .notDetermined:
-            asyncRequestPhotoAddOnlyAuthorization(result: result)
+            asyncRequestPhotoAuthorization(for: accessLevel,result: result)
             break
         case .limited:
             ffPrint("选择了单个相册权限")
@@ -61,35 +51,10 @@ public class FFAuthorizationTool {
         }
     }
     
-    private static func asyncRequestPhotoAuthorization(result: @escaping (_ success: Bool)->Void) {
+    private static func asyncRequestPhotoAuthorization(for accessLevel: FFAccessLevel,result: @escaping (_ success: Bool)->Void) {
         
         if #available(iOS 14, *) {
-            PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
-                DispatchQueue.main.async {
-                    if status != .authorized && status != .limited {
-                        result(false)
-                        ffPrint("未开启相册权限，请到设置中开启")
-                    }
-                    result(true)
-                }
-            }
-        } else {
-            PHPhotoLibrary.requestAuthorization { status in
-                DispatchQueue.main.async {
-                    if status != .authorized {
-                        result(false)
-                        ffPrint("未开启相册权限，请到设置中开启")
-                    }
-                    result(true)
-                }
-            }
-        }
-    }
-    
-    private static func asyncRequestPhotoAddOnlyAuthorization(result: @escaping (_ success: Bool)->Void) {
-        
-        if #available(iOS 14, *) {
-            PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
+            PHPhotoLibrary.requestAuthorization(for: accessLevel.phAccessLevel) { status in
                 DispatchQueue.main.async {
                     if status != .authorized && status != .limited {
                         result(false)
@@ -129,6 +94,84 @@ public class FFAuthorizationTool {
             }
             break
         default: break
+        }
+    }
+}
+
+@available(iOS 13.0, *)
+extension FFAuthorizationTool {
+    public static func requestPhotoAutuorization(for accessLevel: FFAccessLevel) async -> Bool {
+        var status = PHPhotoLibrary.authorizationStatus()
+        if #available(iOS 14, *) {
+            status = PHPhotoLibrary.authorizationStatus(for: accessLevel.phAccessLevel)
+        }
+        
+        if status == .notDetermined {
+            let result = await asyncRequestPhotoAuthorization(for: accessLevel)
+            return await withUnsafeContinuation {(continuation:UnsafeContinuation<Bool, Never>) in
+                return continuation.resume(returning: result)
+            }
+        } else {
+            return await withUnsafeContinuation {(continuation:UnsafeContinuation<Bool, Never>) in
+                switch status {
+                case .authorized:
+                    return continuation.resume(returning: true)
+                case .denied, .restricted:
+                    ffPrint("未获得相册权限")
+                    return continuation.resume(returning: false)
+                case .limited:
+                    ffPrint("选择了单个相册权限")
+                    return continuation.resume(returning: true)
+                default: break
+                }
+            }
+        }
+    }
+    
+    private static func asyncRequestPhotoAuthorization(for accessLevel: FFAccessLevel) async -> Bool {
+        return await withUnsafeContinuation {(continuation:UnsafeContinuation<Bool, Never>) in
+            if #available(iOS 14, *) {
+                PHPhotoLibrary.requestAuthorization(for: accessLevel.phAccessLevel) { status in
+                    DispatchQueue.main.async {
+                        if status != .authorized && status != .limited {
+                            continuation.resume(returning: false)
+                            ffPrint("未开启相册权限，请到设置中开启")
+                        }
+                        continuation.resume(returning: true)
+                    }
+                }
+            } else {
+                PHPhotoLibrary.requestAuthorization { status in
+                    DispatchQueue.main.async {
+                        if status != .authorized {
+                            continuation.resume(returning: false)
+                            ffPrint("未开启相册权限，请到设置中开启")
+                        }
+                        continuation.resume(returning: true)
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    private static func requestCameraAuthorization() async -> Bool {
+        return await withUnsafeContinuation {(continuation:UnsafeContinuation<Bool, Never>) in
+            let status = AVCaptureDevice.authorizationStatus(for: .video)
+            switch status {
+            case .authorized:
+                return continuation.resume(returning: true)
+            case .denied, .restricted:
+                ffPrint("未获得摄像头权限")
+                return continuation.resume(returning: false)
+            case .notDetermined:
+                AVCaptureDevice.requestAccess(for: .video) { finish in
+                    DispatchQueue.main.async {
+                        return continuation.resume(returning: finish)
+                    }
+                }
+            default: break
+            }
         }
     }
 }
