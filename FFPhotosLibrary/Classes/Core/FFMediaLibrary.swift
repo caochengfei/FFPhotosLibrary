@@ -168,13 +168,61 @@ open class FFMediaLibrary: NSObject {
                 }
                 let targetDirectory = (directoryName != nil) ? FFDiskTool.createDirectory(directoryName: directoryName!).path :  NSTemporaryDirectory()
                 var targetPath = targetDirectory + "/\(NSUUID().uuidString.md5).png"
-                targetPath = saveImage(currentImage: image, targetPath: targetPath,usePng: false,useHeic: false)
+                autoreleasepool {
+                    targetPath = saveImage(currentImage: image, targetPath: targetPath,usePng: false,useHeic: false)
+                }
                 DispatchQueue.main.async {
                     completion(URL(fileURLWithPath: targetPath))
                 }
             }
         }
         return reqId
+    }
+    
+    /// 获取图片
+    /// - Parameters:
+    ///   - asset: PHAsset
+    ///   - progress: 进度回调
+    ///   - completion: 结果回调
+    /// - Returns: PHImageRequestID 用来取消操作
+    @discardableResult
+    public static func getImage(asset: PHAsset,
+                         maxSize: CGSize = CGSize(width: 3000, height: 3000),
+                         directoryName: String? = nil,
+                         progress: ((Double)->())?) async throws -> URL {
+        let adjustmentResources = PHAssetResource.assetResources(for: asset).filter { $0.type == .adjustmentData }
+        
+        let option: PHImageRequestOptions = PHImageRequestOptions()
+        option.isNetworkAccessAllowed = true
+        option.deliveryMode = .highQualityFormat
+        option.version = adjustmentResources.count > 0 ? .current : .unadjusted
+        let progressHandler: PHAssetImageProgressHandler = { (percent, error, stop, info) in
+            progress?(percent)
+        }
+        option.progressHandler = progressHandler
+        let targetSize = maxSize.fitRect(imageSize: CGSize(width: asset.pixelWidth, height: asset.pixelHeight)).size
+
+        return try await withUnsafeThrowingContinuation { (config:UnsafeContinuation<URL, Error>) in
+            //长边最大3000
+            let reqId = PHImageManager.default().requestImage(for: asset,
+                                                              targetSize: targetSize,
+                                                              contentMode: .aspectFit,
+                                                              options: option) { (image, hash) in
+                DispatchQueue.global().async {
+                    guard let image = image else{
+                        config.resume(throwing: NSError(domain: "url is nil", code: -1))
+                        return
+                    }
+                    let targetDirectory = (directoryName != nil) ? FFDiskTool.createDirectory(directoryName: directoryName!).path :  NSTemporaryDirectory()
+                    var targetPath = targetDirectory + "/\(NSUUID().uuidString.md5).png"
+                    targetPath = saveImage(currentImage: image, targetPath: targetPath,usePng: false,useHeic: false)
+                    DispatchQueue.main.async {
+                        config.resume(returning: URL(fileURLWithPath: targetPath))
+//                        completion(URL(fileURLWithPath: targetPath))
+                    }
+                }
+            }
+        }
     }
     
     /// 获取缩略图

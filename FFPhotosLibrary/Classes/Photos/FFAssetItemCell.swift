@@ -142,8 +142,8 @@ class FFAssetItemCell: UICollectionViewCell {
     }
     
     deinit {
-        //        let fileName: String = (#file as NSString).lastPathComponent
-        //        ffPrint("\(fileName) - deinit")
+        //        
+        //        deinitPrint()
     }
     
     override func prepareForReuse() {
