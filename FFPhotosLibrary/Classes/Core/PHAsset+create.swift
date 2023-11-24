@@ -125,6 +125,22 @@ extension PHAsset {
         }
     }
     
+    public static func asyncCreateAssets(data: Data?,createDate: Date? = nil) async throws -> String {
+        var assetId: String = ""
+        try await PHPhotoLibrary.shared().performChanges {
+            guard let data = data else {
+                return
+            }
+            let request = PHAssetCreationRequest.forAsset()
+            request.addResource(with: .photo, data: data, options: nil)
+            if let date = createDate {
+                request.creationDate = date
+            }
+            assetId = request.placeholderForCreatedAsset?.localIdentifier ?? ""
+        }
+        return assetId
+    }
+    
     /// 异步根据图片路径创建Asset
     /// - Parameters:
     ///   - data: 图片数据
