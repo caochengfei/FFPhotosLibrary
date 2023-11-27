@@ -845,21 +845,6 @@ extension FFMediaLibrary {
         return try await PHAsset.asyncCreateAssets(data: data, createDate: createDate)
     }
     
-    public static func syncSaveImageToPhotosWithDataAndReturnAsset(for data: Data?, createDate: Date? = nil, completion: @escaping (Error?, PHAsset?)->Void) {
-        FFAuthorizationTool.requestPhotoAuthorization(for: .addOnly, result: { success in
-            if !success {
-                completion(NSError(domain: "请打开相册权限", code: -1), nil)
-                return
-            }
-            PHAsset.syncCreateAssets(data: data, createDate: createDate) { assetId, error in
-                DispatchQueue.main.async {
-                    let assets = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil)
-                    completion(error, assets.firstObject)
-                }
-            }
-        })
-    }
-    
     public static func syncSaveImageWithDataToCustomPhotos(for data: Data?,createDate: Date? = nil, completion: @escaping (Error?, String?)->Void) {
         FFAuthorizationTool.requestPhotoAuthorization(for: .readWrite, result: { success in
             if !success {
