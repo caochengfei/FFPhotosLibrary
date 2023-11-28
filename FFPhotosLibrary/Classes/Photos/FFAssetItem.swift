@@ -33,6 +33,8 @@ open class FFAssetItem: NSObject,FFAssetItemObserverProtocol {
     // PHAsset
     public var asset:PHAsset?
     
+    public var phRequestID: PHImageRequestID?
+    
     public var enableSelect: BehaviorRelay<Bool> = BehaviorRelay<Bool>(value: true)
             
     public func duration() ->TimeInterval {

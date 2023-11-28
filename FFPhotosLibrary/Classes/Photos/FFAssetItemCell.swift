@@ -85,7 +85,12 @@ class FFAssetItemCell: UICollectionViewCell {
 
     // 模型
     var assetModel : FFAssetItem? {
-        didSet { updateData(model: assetModel) }
+        didSet {
+            if let phRequestID = oldValue?.phRequestID {
+                PHImageManager.default().cancelImageRequest(phRequestID)
+            }
+            updateData(model: assetModel)
+        }
     }
     
     // 图片imageView
@@ -246,8 +251,9 @@ extension FFAssetItemCell {
     func requestImage(model: FFAssetItem?) {
         let size = CGSize(width: self.width * UIScreen.main.scale, height: self.height * UIScreen.main.scale)
         if let asset = model?.asset {
-            FFMediaLibrary.getThumbImage(asset: asset, size: size,isPrew: true) {[weak self] image in
+            model?.phRequestID = FFMediaLibrary.getThumbImage(asset: asset, size: size,isPrew: true) {[weak self] image in
                 self?.imageView.image = image
+                self?.assetModel?.phRequestID = nil
             }
         }
         if model?.asset?.mediaType == PHAssetMediaType.image {
