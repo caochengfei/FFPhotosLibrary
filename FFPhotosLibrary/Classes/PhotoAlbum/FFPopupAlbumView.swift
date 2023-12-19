@@ -125,7 +125,7 @@ extension FFPopupAlbumView: UITableViewDelegate, UITableViewDataSource {
             return cell!
         }
         
-        let size = CGSize(width: albumImageItemHeight * UIScreen.main.scale, height: albumImageItemHeight * UIScreen.main.scale)
+        let size = CGSize(width: albumImageItemHeight * UIDevice.deviceScale, height: albumImageItemHeight * UIDevice.deviceScale)
         PHCachingImageManager.default().requestImage(for: item,
                                    targetSize: size,
                                    contentMode: .aspectFill,

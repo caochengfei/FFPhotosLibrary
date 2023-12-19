@@ -189,7 +189,7 @@ class FFPreviewCell: UICollectionViewCell {
             options.version = .current
             options.deliveryMode = .opportunistic
             options.isNetworkAccessAllowed = true
-            let size = CGSize(width: UIScreen.main.bounds.width * UIScreen.main.scale, height: UIScreen.main.bounds.height * UIScreen.main.scale)
+            let size = CGSize(width: UIScreen.main.bounds.width * UIDevice.deviceScale, height: UIScreen.main.bounds.height * UIDevice.deviceScale)
             let resourceArray = PHAssetResource.assetResources(for: asset)
             if resourceArray.first?.value(forKey: "locallyAvailable") as? Bool == false {
                 self.activeView.startAnimating()

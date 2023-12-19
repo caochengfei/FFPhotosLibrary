@@ -249,7 +249,7 @@ extension FFAssetItemCell {
 
     //显示图片跟视频时长
     func requestImage(model: FFAssetItem?) {
-        let size = CGSize(width: self.width * UIScreen.main.scale, height: self.height * UIScreen.main.scale)
+        let size = CGSize(width: self.width * UIDevice.deviceScale, height: self.height * UIDevice.deviceScale)
         if let asset = model?.asset {
             model?.phRequestID = FFMediaLibrary.getThumbImage(asset: asset, size: size,isPrew: true) {[weak self] image in
                 self?.imageView.image = image
