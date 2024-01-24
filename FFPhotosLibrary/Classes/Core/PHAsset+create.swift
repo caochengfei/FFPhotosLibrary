@@ -125,6 +125,7 @@ extension PHAsset {
         }
     }
     
+    @available(iOS 13.0, *)
     public static func asyncCreateAssets(data: Data?,createDate: Date? = nil) async throws -> String {
         var assetId: String = ""
         try await PHPhotoLibrary.shared().performChanges {

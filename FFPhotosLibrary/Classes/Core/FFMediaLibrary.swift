@@ -185,6 +185,7 @@ open class FFMediaLibrary: NSObject {
     ///   - progress: 进度回调
     ///   - completion: 结果回调
     /// - Returns: PHImageRequestID 用来取消操作
+    @available(iOS 13.0, *)
     @discardableResult
     public static func getImage(asset: PHAsset,
                          maxSize: CGSize = CGSize(width: 3000, height: 3000),
@@ -837,6 +838,7 @@ extension FFMediaLibrary {
         })
     }
     
+    @available(iOS 13.0, *)
     public static func saveImageToPhotosWithData(with data: Data?, createDate: Date? = nil) async throws -> String {
         let status = await FFAuthorizationTool.requestPhotoAutuorization(for: .addOnly)
         if status == false {
@@ -903,6 +905,7 @@ extension FFMediaLibrary {
         })
     }
     
+    @available(iOS 13.0, *)
     public static func asyncSaveImageWithDataToCustomPhotos(for data: Data?,createDate: Date? = nil) async throws -> String {
         let status = await FFAuthorizationTool.requestPhotoAutuorization(for: .readWrite)
         if status == false {
