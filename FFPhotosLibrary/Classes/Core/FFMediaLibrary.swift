@@ -121,7 +121,7 @@ open class FFMediaLibrary: NSObject {
             let targetPath: String = "\(folderPath)/\(targetId.md5).\(origUrl.pathExtension)"
            
             if !FileManager.default.fileExists(atPath: targetPath) {
-                FFDiskTool.copyItem(fromUrl: origUrl, toUrl: URL(fileURLWithPath: targetPath))
+                FileManager.copyItem(fromUrl: origUrl, toUrl: URL(fileURLWithPath: targetPath))
             }
             
             DispatchQueue.main.async {
@@ -166,7 +166,7 @@ open class FFMediaLibrary: NSObject {
                     completion(nil)
                     return
                 }
-                let targetDirectory = (directoryName != nil) ? FFDiskTool.createDirectory(directoryName: directoryName!).path :  NSTemporaryDirectory()
+                let targetDirectory = (directoryName != nil) ? FileManager.createDirectory(directoryName: directoryName!).path :  NSTemporaryDirectory()
                 var targetPath = targetDirectory + "/\(NSUUID().uuidString.md5).png"
                 autoreleasepool {
                     targetPath = saveImage(currentImage: image, targetPath: targetPath,usePng: false,useHeic: false)
@@ -214,7 +214,7 @@ open class FFMediaLibrary: NSObject {
                         config.resume(throwing: NSError(domain: "url is nil", code: -1))
                         return
                     }
-                    let targetDirectory = (directoryName != nil) ? FFDiskTool.createDirectory(directoryName: directoryName!).path :  NSTemporaryDirectory()
+                    let targetDirectory = (directoryName != nil) ? FileManager.createDirectory(directoryName: directoryName!).path :  NSTemporaryDirectory()
                     var targetPath = targetDirectory + "/\(NSUUID().uuidString.md5).png"
                     targetPath = saveImage(currentImage: image, targetPath: targetPath,usePng: false,useHeic: false)
                     DispatchQueue.main.async {
@@ -955,7 +955,7 @@ extension FFMediaLibrary {
                 if currentImage.isHeicSupported, let imageData = currentImage.heic {
                     var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
                     urlPath.appendPathExtension("heic")
-                    FFDiskTool.saveFile(data: imageData, url: urlPath)
+                    FileManager.saveFile(data: imageData, url: urlPath)
                     resultPath = urlPath.path
                 } else {
                     saveError = true
@@ -970,7 +970,7 @@ extension FFMediaLibrary {
             if let imageData = currentImage.jpegData(compressionQuality: 1.0) {
                 var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
                 urlPath.appendPathExtension("jpeg")
-                FFDiskTool.saveFile(data: imageData, url: urlPath)
+                FileManager.saveFile(data: imageData, url: urlPath)
                 resultPath = urlPath.path
             } else {
                 saveError = true
@@ -985,7 +985,7 @@ extension FFMediaLibrary {
             if let imageData = currentImage.pngData() {
                 var urlPath = URL(fileURLWithPath: targetPath).deletingPathExtension()
                 urlPath.appendPathExtension("png")
-                FFDiskTool.saveFile(data: imageData, url: urlPath)
+                FileManager.saveFile(data: imageData, url: urlPath)
                 resultPath = urlPath.path
             } else {
                 saveError = true
