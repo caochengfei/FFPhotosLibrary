@@ -8,9 +8,9 @@
 
 import UIKit
 import Photos
+import RxSwift
 import SnapKit
-//import RxSwift
-//import RxRelay
+import RxRelay
 
 enum DownloadingStatus:Int {
     case downloading

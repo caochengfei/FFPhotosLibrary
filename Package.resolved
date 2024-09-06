@@ -1,13 +1,22 @@
 {
-  "originHash" : "811a9c75dc805436c2621ac8b612af010bbb55d18c33f803c6d6591c98d5dee9",
+  "originHash" : "7273f06bb48e0f99a3faa105fad105800bd618e40a7e3a228ba14adbbdfac3ba",
   "pins" : [
     {
       "identity" : "ffuitool",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/caochengfei/FFUITool.git",
       "state" : {
-        "revision" : "ee70dcf94d8c441b7b7071e6a92b251e3bd8a655",
-        "version" : "0.2.1"
+        "revision" : "350612ba0502d6dc73dcf46570c20f4fe1cea18f",
+        "version" : "0.2.2"
+      }
+    },
+    {
+      "identity" : "rxswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ReactiveX/RxSwift.git",
+      "state" : {
+        "revision" : "b06a8c8596e4c3e8e7788e08e720e3248563ce6a",
+        "version" : "6.7.1"
       }
     },
     {
