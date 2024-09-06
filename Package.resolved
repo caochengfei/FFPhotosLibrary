@@ -1,0 +1,24 @@
+{
+  "originHash" : "811a9c75dc805436c2621ac8b612af010bbb55d18c33f803c6d6591c98d5dee9",
+  "pins" : [
+    {
+      "identity" : "ffuitool",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/caochengfei/FFUITool.git",
+      "state" : {
+        "revision" : "ee70dcf94d8c441b7b7071e6a92b251e3bd8a655",
+        "version" : "0.2.1"
+      }
+    },
+    {
+      "identity" : "snapkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SnapKit/SnapKit.git",
+      "state" : {
+        "revision" : "2842e6e84e82eb9a8dac0100ca90d9444b0307f4",
+        "version" : "5.7.1"
+      }
+    }
+  ],
+  "version" : 3
+}
